@@ -1,0 +1,23 @@
+{
+  "name": "stand-up-smack-down",
+  "version": "1.0.0",
+  "description": "An online multiplayer game utilizing Phaser 3, Socket.io, and Express",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sponeill/SmashUps.git"
+  },
+  "author": "Shane O'Neill",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sponeill/SmashUps/issues"
+  },
+  "homepage": "https://github.com/sponeill/SmashUps#readme"
+}

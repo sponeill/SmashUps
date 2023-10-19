@@ -1,4 +1,15 @@
-# SmashUps
-Phaser 3 multiplayer brawler utilizing Socket.io
+# Stand Up Smack Down
 
-See https://medium.com/hannahrobot/build-an-among-us-inspired-live-multiplayer-game-with-phaser-3-and-socket-io-part-1-71749d70b7b4
+Online multiplayer game utilizing Phaser 3, Socket.io, and Express.
+
+## NOTES
+
+- Battle Royale style with a stock of 3 lives
+- Game events can be triggered by players
+- Environmental changes
+
+## Questions
+
+- How can players name themselves when joining?
+- Display life count and number of eliminations
+- Display event messages
