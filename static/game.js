@@ -27,6 +27,15 @@ function preload() {
   //Sprites
 
   //Character 1
+    this.load.spritesheet('char1_run', '/static/assets/sprites/Characters/1/Run.png', {
+      frameWidth: 459,
+      frameHeight: 584,
+     });
+  
+    this.load.spritesheet('char1_idle', '/static/assets/sprites/Characters/1/Idle.png', {
+      frameWidth: 459,
+      frameHeight: 584,
+    });
 
   //Character 2
     this.load.spritesheet('char2_run', '/static/assets/sprites/Characters/2/Run.png', {
@@ -64,6 +73,25 @@ function create() {
     //Create Animations
 
     //Character 1
+    this.anims.create({
+        key: "char1_run",
+        frames: this.anims.generateFrameNumbers("char1_run", {
+          start: 0,
+          end: 7,
+        }),
+        frameRate: 25,
+        repeat: -1,
+    });
+  
+    this.anims.create({
+      key: "char1_idle",
+      frames: this.anims.generateFrameNumbers("char1_idle", {
+        start: 0,
+        end: 9,
+      }),
+      frameRate: 25,
+      repeat: -1,
+    });
 
     //Character 2
     this.anims.create({
@@ -135,7 +163,7 @@ function create() {
 }
 
 function addPlayer(self, playerInfo) {
-  self.player = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'char2_idle')
+  self.player = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'char1_idle')
     .setDisplaySize(125, 125)
     .setBounce(0.2)
     .setCollideWorldBounds(true)
@@ -167,7 +195,7 @@ function update() {
       this.player.setFlipX(true);
 
       if (this.player.body.touching.down) {
-        this.player.anims.play("char2_run", true);
+        this.player.anims.play("char1_run", true);
       } else {
         this.player.anims.play("char2_jump", true);
       }
@@ -177,12 +205,12 @@ function update() {
       this.player.setVelocityX(160);
 
       if (this.player.body.touching.down) {
-        this.player.anims.play("char2_run", true);
+        this.player.anims.play("char1_run", true);
       } else {
         this.player.anims.play("char2_jump", true);
       }
     } else {
-      this.player.anims.play("char2_idle", true);
+      this.player.anims.play("char1_idle", true);
       this.player.setVelocityX(0);
     }
 
