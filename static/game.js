@@ -48,7 +48,7 @@ function preload() {
 function create() {
   const self = this
   this.socket = io()
-  this.otherPlayers = this.physics.add.group()
+  this.otherPlayers = this.physics.add.group({ collideWorldBounds: true })
 
   //Enable Keyboard Inputs
   cursors = this.input.keyboard.createCursorKeys();
@@ -144,8 +144,6 @@ function addPlayer(self, playerInfo) {
 function addOtherPlayers(self, playerInfo) {
   const otherPlayer = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'char2_idle')
     .setDisplaySize(125, 125)
-    .setBounce(0.2)
-    .setCollideWorldBounds(true)
     
   otherPlayer.playerId = playerInfo.playerId
   otherPlayer.setTint(playerInfo.color)
@@ -153,6 +151,10 @@ function addOtherPlayers(self, playerInfo) {
 }
 
 function update() {
+
+  //Enemy Movement Anims
+
+  
 
   //-----------------------------------------------------------------------//
   
@@ -214,7 +216,6 @@ function update() {
 
     this.player.oldPosition = currPosition
   }
-
 
   //   if (this.cursors.left.isDown && (this.cursors.up.isDown || this.cursors.down.isDown)) {
   //     this.car.setAngularVelocity(-100)
