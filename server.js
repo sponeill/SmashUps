@@ -28,7 +28,6 @@ io.on('connection', function (socket) {
   console.log('player [' + socket.id + '] connected')
 
   players[socket.id] = {
-    rotation: 0,
     x: 30,
     y: 30,
     playerId: socket.id,
@@ -47,6 +46,7 @@ io.on('connection', function (socket) {
     players[socket.id].x = movementData.x
     players[socket.id].y = movementData.y
     players[socket.id].direction = movementData.direction
+    players[socket.id].facingRight = movementData.facingRight
 
     socket.broadcast.emit('playerMoved', players[socket.id])
   })

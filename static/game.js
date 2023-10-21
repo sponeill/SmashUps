@@ -160,7 +160,7 @@ function create() {
         otherPlayer.setPosition(playerInfo.x, playerInfo.y)
 
         //TODO: NEED TO HANDLE WHICH DIRECTION THEY ARE LEFT FACING FOR IDLE ANIMATION
-        
+
         if (playerInfo.direction === "right") {
           otherPlayer.setFlipX(false);
           otherPlayer.anims.play("char2_run", true);
@@ -172,12 +172,22 @@ function create() {
         }
 
         if (playerInfo.direction === "idle") {
-          otherPlayer.setFlipX(true);
+          if (playerInfo.facingRight !== true) {
+            otherPlayer.setFlipX(true);
+          } else {
+            otherPlayer.setFlipX(false);
+          }
+
           otherPlayer.anims.play("char2_idle", true);
         }
 
         if (playerInfo.direction === "up") {
-          otherPlayer.setFlipX(true);
+          if (playerInfo.facingRight !== true) {
+            otherPlayer.setFlipX(true);
+          } else {
+            otherPlayer.setFlipX(false);
+          }
+
           otherPlayer.anims.play("char2_jump", true);
         }
       }
@@ -186,19 +196,27 @@ function create() {
 }
 
 function addPlayer(self, playerInfo) {
+
+  //var username = prompt("Please Enter Your Name", "")
+
   self.player = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'char1_idle')
     .setDisplaySize(125, 125)
     .setBounce(0.2)
     .setCollideWorldBounds(true)
   
   self.player.lives = 5;
+  self.player.hitPoints = 3;
+  //self.player.username = username;
+
+  //TODO: SOCKET EVENT UPDATE PLAYER OBJECT WITH USERNAME MATCH ON SOCKET ID
 }
 
 function addOtherPlayers(self, playerInfo) {
   const otherPlayer = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'char2_idle')
     .setDisplaySize(125, 125)
     
-  otherPlayer.playerId = playerInfo.playerId
+  otherPlayer.playerId = playerInfo.playerId;
+  otherPlayer.username = playerInfo.username;
   otherPlayer.setTint(playerInfo.color)
   self.otherPlayers.add(otherPlayer)
 }
@@ -267,13 +285,15 @@ function update() {
     const currPosition = {
       x: this.player.x,
       y: this.player.y,
-      direction: direction
+      direction: direction,
+      facingRight: facingRight,
     }
 
     if (this.player.oldPosition && (
           currPosition.x !== this.player.oldPosition.x ||
           currPosition.y !== this.player.oldPosition.y ||
-          currPosition.direction !== this.player.oldPosition.direction )) {
+          currPosition.direction !== this.player.oldPosition.direction ||
+          currPosition.facingRight !== this.player.oldPosition.facingRight )) {
       
       //Update the Player location via Socket
       this.socket.emit('playerMovement', currPosition)
