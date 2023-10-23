@@ -221,7 +221,7 @@ function addOtherPlayers(self, playerInfo) {
     
   otherPlayer.playerId = playerInfo.playerId;
   otherPlayer.username = playerInfo.username;
-  otherPlayer.setTint(playerInfo.color)
+  //otherPlayer.setTint(playerInfo.color)
   self.otherPlayers.add(otherPlayer)
 }
 
