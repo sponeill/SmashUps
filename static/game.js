@@ -41,17 +41,17 @@ function preload() {
   //Character 2
     this.load.spritesheet('char2_run', '/static/assets/sprites/Characters/2/Run.png', {
       frameWidth: 459,
-      frameHeight: 584,
+      frameHeight: 518,
     });
 
     this.load.spritesheet('char2_jump', '/static/assets/sprites/Characters/2/Jump.png', {
       frameWidth: 459,
-      frameHeight: 584,
+      frameHeight: 513,
     });
   
     this.load.spritesheet('char2_idle', '/static/assets/sprites/Characters/2/Idle.png', {
       frameWidth: 459,
-      frameHeight: 584,
+      frameHeight: 492,
     });
 }
 
@@ -113,9 +113,13 @@ function create() {
       repeat: -1,
     });
 
+   //TODO: USE A SINGLE IMAGE FRAME HERE?
     this.anims.create({
       key: "char2_jump",
-      frames: this.anims.generateFrameNumbers("char2_jump"),
+      frames: this.anims.generateFrameNumbers("char2_jump", {
+        start: 4,
+        end: 4,
+      }),
       frameRate: 25,
       repeat: -1,
     });
@@ -159,8 +163,6 @@ function create() {
         
         otherPlayer.setPosition(playerInfo.x, playerInfo.y)
 
-        //TODO: NEED TO HANDLE WHICH DIRECTION THEY ARE LEFT FACING FOR IDLE ANIMATION
-
         if (playerInfo.direction === "right") {
           otherPlayer.setFlipX(false);
           otherPlayer.anims.play("char2_run", true);
@@ -190,6 +192,8 @@ function create() {
 
           otherPlayer.anims.play("char2_jump", true);
         }
+
+        //TODO: Default to Jump animation if player is in the air and also pushing left or right
       }
     })
   })
@@ -222,10 +226,6 @@ function addOtherPlayers(self, playerInfo) {
 }
 
 function update() {
-
-  //Enemy Movement Animations
-
-  
 
   //-----------------------------------------------------------------------//
   
@@ -301,40 +301,4 @@ function update() {
 
     this.player.oldPosition = currPosition
   }
-
-  //   if (this.cursors.left.isDown && (this.cursors.up.isDown || this.cursors.down.isDown)) {
-  //     this.car.setAngularVelocity(-100)
-  //   } else if (this.cursors.right.isDown && (this.cursors.up.isDown || this.cursors.down.isDown)) {
-  //     this.car.setAngularVelocity(100)
-  //   } else {
-  //     this.car.setAngularVelocity(0)
-  //   }
-
-  //   const velX = Math.cos((this.car.angle - 360) * 0.01745)
-  //   const velY = Math.sin((this.car.angle - 360) * 0.01745)
-  //   if (this.cursors.up.isDown) {
-  //     this.car.setVelocityX(200 * velX)
-  //     this.car.setVelocityY(200 * velY)
-  //   } else if (this.cursors.down.isDown) {
-  //     this.car.setVelocityX(-100 * velX)
-  //     this.car.setVelocityY(-100 * velY)
-  //   } else {
-  //     this.car.setAcceleration(0)
-  //   }
-
-  //   const currPosition = {
-  //     x: this.car.x,
-  //     y: this.car.y,
-  //     rotation: this.car.rotation
-  //   }
-  //   if (this.car.oldPosition && (
-  //         currPosition.x !== this.car.oldPosition.x ||
-  //         currPosition.y !== this.car.oldPosition.y ||
-  //     currPosition.rotation !== this.car.oldPosition.rotation)) {
-  //     //Update the Player location
-  //     this.socket.emit('playerMovement', currPosition)
-  //   }
-
-  //   this.car.oldPosition = currPosition
-  // }
 }
