@@ -22,6 +22,9 @@ var facingRight = true;
 function preload() {
   //Images
   this.load.image("dry_erase_board", "/static/assets/images/DryEraseBoard.png");
+  this.load.image("sticky_note", "/static/assets/images/StickyNote.png");
+  this.load.image("sticky_note_2", "/static/assets/images/StickyNote2.png");
+  this.load.image("sticky_note_3", "/static/assets/images/StickyNote3.png");
 
   //Sprites
 
@@ -80,6 +83,18 @@ function preload() {
 
 function create() {
   this.add.image(800, 500, "dry_erase_board");
+
+  var stickyNote = this.add.image(85, 70, "sticky_note");
+  stickyNote.setDisplaySize(105, 95);
+  stickyNote.setRotation(-0.2)
+
+  var stickyNote2 = this.add.image(285, 70, "sticky_note_2");
+  stickyNote2.setDisplaySize(105, 105);
+  stickyNote2.setRotation(.2)
+
+  var stickyNote3 = this.add.image(1535, 70, "sticky_note_3");
+  stickyNote3.setDisplaySize(105, 105);
+  stickyNote3.setRotation(0)
 
   //x=39, y = 25, height = 950-35, width = 1565 - 39
   this.physics.world.setBounds(39, 25, 1526, 920, true, true, true, true);
