@@ -20,6 +20,9 @@ var player;
 var facingRight = true;
 
 function preload() {
+  //Images
+  this.load.image("dry_erase_board", "/static/assets/images/DryEraseBoard.png");
+
   //Sprites
 
   //Character 1
@@ -33,7 +36,22 @@ function preload() {
       frameHeight: 456,
     });
   
-    this.load.spritesheet('char1_jump', '/static/assets/sprites/Characters/1/Jump.png', {
+    this.load.spritesheet('char1_jump', '/static/assets/sprites/Characters/1/Jump_Static.png', {
+      frameWidth: 459,
+      frameHeight: 486,
+    });
+  
+    this.load.spritesheet('char1_run_shoot', '/static/assets/sprites/Characters/1/Run_Shoot.png', {
+      frameWidth: 459,
+      frameHeight: 476,
+    });
+  
+    this.load.spritesheet('char1_idle_shoot', '/static/assets/sprites/Characters/1/Idle_Shoot.png', {
+      frameWidth: 459,
+      frameHeight: 456,
+    });
+  
+    this.load.spritesheet('char1_jump_shoot', '/static/assets/sprites/Characters/1/Jump_Static_Shoot.png', {
       frameWidth: 459,
       frameHeight: 486,
     });
@@ -53,9 +71,19 @@ function preload() {
       frameWidth: 459,
       frameHeight: 492,
     });
+  
+    this.load.spritesheet('char2_idle_shoot', '/static/assets/sprites/Characters/2/Idle_Shoot.png', {
+      frameWidth: 459,
+      frameHeight: 492,
+    });
 }
 
 function create() {
+  this.add.image(800, 500, "dry_erase_board");
+
+  //x=39, y = 25, height = 950-35, width = 1565 - 39
+  this.physics.world.setBounds(39, 25, 1526, 920, true, true, true, true);
+
   const self = this
   this.socket = io()
   this.otherPlayers = this.physics.add.group({ collideWorldBounds: true })
@@ -87,13 +115,9 @@ function create() {
       repeat: -1,
     });
   
-    //TODO: USE A SINGLE IMAGE FRAME HERE?
     this.anims.create({
       key: "char1_jump",
-      frames: this.anims.generateFrameNumbers("char1_jump", {
-        start: 4,
-        end: 4,
-      }),
+      frames: this.anims.generateFrameNumbers("char1_jump"),
       frameRate: 25,
       repeat: 0,
     });
@@ -101,6 +125,27 @@ function create() {
     this.anims.create({
       key: "char1_idle",
       frames: this.anims.generateFrameNumbers("char1_idle"),
+      frameRate: 25,
+      repeat: -1,
+    });
+  
+    this.anims.create({
+      key: "char1_run_shoot",
+      frames: this.anims.generateFrameNumbers("char1_run_shoot"),
+      frameRate: 25,
+      repeat: -1,
+    });
+  
+    this.anims.create({
+      key: "char1_idle_shoot",
+      frames: this.anims.generateFrameNumbers("char1_idle_shoot"),
+      frameRate: 25,
+      repeat: -1,
+    });
+  
+    this.anims.create({
+      key: "char1_jump_shoot",
+      frames: this.anims.generateFrameNumbers("char1_jump_shoot"),
       frameRate: 25,
       repeat: -1,
     });
@@ -113,13 +158,9 @@ function create() {
       repeat: -1,
     });
 
-   //TODO: USE A SINGLE IMAGE FRAME HERE?
     this.anims.create({
       key: "char2_jump",
-      frames: this.anims.generateFrameNumbers("char2_jump", {
-        start: 4,
-        end: 4,
-      }),
+      frames: this.anims.generateFrameNumbers("char2_jump"),
       frameRate: 25,
       repeat: -1,
     });
@@ -127,6 +168,13 @@ function create() {
     this.anims.create({
       key: "char2_idle",
       frames: this.anims.generateFrameNumbers("char2_idle"),
+      frameRate: 25,
+      repeat: -1,
+    });
+  
+      this.anims.create({
+      key: "char2_idle_shoot",
+      frames: this.anims.generateFrameNumbers("char2_idle_shoot"),
       frameRate: 25,
       repeat: -1,
     });
@@ -163,6 +211,8 @@ function create() {
         
         otherPlayer.setPosition(playerInfo.x, playerInfo.y)
 
+        //TODO: ANIMATIONS FOR playerInfo.isShooting == true
+
         if (playerInfo.direction === "right") {
           otherPlayer.setFlipX(false);
           otherPlayer.anims.play("char2_run", true);
@@ -180,7 +230,11 @@ function create() {
             otherPlayer.setFlipX(false);
           }
 
-          otherPlayer.anims.play("char2_idle", true);
+          if (playerInfo.isShooting) {
+            otherPlayer.anims.play("char2_idle_shoot", true);
+          } else {
+            otherPlayer.anims.play("char2_idle", true);
+          }
         }
 
         if (playerInfo.direction === "up") {
@@ -205,7 +259,7 @@ function addPlayer(self, playerInfo) {
 
   self.player = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'char1_idle')
     .setDisplaySize(125, 125)
-    .setBounce(0.2)
+    .setBounce(0.1)
     .setCollideWorldBounds(true)
   
   self.player.lives = 5;
@@ -243,9 +297,17 @@ function update() {
       this.player.setFlipX(true);
 
       if (this.player.body.blocked.down) {
-        this.player.anims.play("char1_run", true);
+        if (cursors.space.isDown) {
+          this.player.anims.play("char1_run_shoot", true);
+        } else {
+          this.player.anims.play("char1_run", true);
+        }
       } else {
-        this.player.anims.play("char1_jump", true);
+        if (cursors.space.isDown) {
+          this.player.anims.play("char1_jump_shoot", true);
+        } else {
+          this.player.anims.play("char1_jump", true);
+        }
       }
     //Move Right
     } else if (cursors.right.isDown) {
@@ -255,14 +317,26 @@ function update() {
       this.player.setVelocityX(200);
 
       if (this.player.body.blocked.down) {
-        this.player.anims.play("char1_run", true);
+        if (cursors.space.isDown) {
+          this.player.anims.play("char1_run_shoot", true);
+        } else {
+          this.player.anims.play("char1_run", true);
+        }
       } else {
-        this.player.anims.play("char1_jump", true)
+         if (cursors.space.isDown) {
+          this.player.anims.play("char1_jump_shoot", true);
+        } else {
+          this.player.anims.play("char1_jump", true);
+        }
       }
     //Idle
     } else {
       direction = "idle";
-      this.player.anims.play("char1_idle", true);
+       if (cursors.space.isDown) {
+          this.player.anims.play("char1_idle_shoot", true);
+        } else {
+          this.player.anims.play("char1_idle", true);
+        }
       this.player.setVelocityX(0);
     }
 
@@ -277,23 +351,29 @@ function update() {
         this.player.setVelocityY(-380);
       }
 
-      this.player.anims.play("char1_jump", true);
+      if (cursors.space.isDown) {
+        //TODO: THIS ISN'T PLAYING THE FULL ANIMATION
+          this.player.anims.play("char1_jump_shoot", true);
+      } else {
+          this.player.anims.play("char1_jump", true);
+      }
     }
 
     //Get Player Location and Send it to Everyone Else
-    
-    const currPosition = {
-      x: this.player.x,
-      y: this.player.y,
-      direction: direction,
-      facingRight: facingRight,
+      const currPosition = {
+        x: this.player.x,
+        y: this.player.y,
+        direction: direction,
+        facingRight: facingRight,
+        isShooting: cursors.space.isDown,
     }
 
     if (this.player.oldPosition && (
           currPosition.x !== this.player.oldPosition.x ||
           currPosition.y !== this.player.oldPosition.y ||
           currPosition.direction !== this.player.oldPosition.direction ||
-          currPosition.facingRight !== this.player.oldPosition.facingRight )) {
+          currPosition.facingRight !== this.player.oldPosition.facingRight ||
+          currPosition.isShooting !== this.player.oldPosition.isShooting)) {
       
       //Update the Player location via Socket
       this.socket.emit('playerMovement', currPosition)

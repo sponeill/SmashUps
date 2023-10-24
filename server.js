@@ -1,5 +1,3 @@
-// TODO: REPLACE WITH MY GAME ACTIONS
-
 const express = require('express')
 const http = require('http')
 const path = require('path')
@@ -47,6 +45,7 @@ io.on('connection', function (socket) {
     players[socket.id].y = movementData.y
     players[socket.id].direction = movementData.direction
     players[socket.id].facingRight = movementData.facingRight
+    players[socket.id].isShooting = movementData.isShooting
 
     socket.broadcast.emit('playerMoved', players[socket.id])
   })
