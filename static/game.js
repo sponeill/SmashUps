@@ -17,14 +17,41 @@ var config = {
 var game = new Phaser.Game(config)
 
 var player;
+var platforms;
 var facingRight = true;
+var healthZero;
+var healthOne;
+var healthTwo;
+var healthThree;
+var healthFour;
 
 function preload() {
   //Images
   this.load.image("dry_erase_board", "/static/assets/images/DryEraseBoard.png");
-  this.load.image("sticky_note", "/static/assets/images/StickyNote.png");
-  this.load.image("sticky_note_2", "/static/assets/images/StickyNote2.png");
+  
+  this.load.image("sticky_note", "/static/assets/images/PaulWasHere.png");
+  this.load.image("sticky_note_2", "/static/assets/images/WhosHosting.png");
   this.load.image("sticky_note_3", "/static/assets/images/StickyNote3.png");
+  this.load.image("sticky_note_4", "/static/assets/images/AS400s.png");
+ 
+  this.load.image("lives_3", "/static/assets/images/Lives_3.png");
+  this.load.image("lives_2", "/static/assets/images/Lives_2.png");
+  this.load.image("lives_1", "/static/assets/images/Lives_1.png");
+  this.load.image("lives_0", "/static/assets/images/Lives_0.png");
+  
+  this.load.image("health_0", "/static/assets/images/Health_0.png");
+  this.load.image("health_1", "/static/assets/images/Health_1.png");
+  this.load.image("health_2", "/static/assets/images/Health_2.png");
+  this.load.image("health_3", "/static/assets/images/Health_3.png");
+  this.load.image("health_4", "/static/assets/images/Health_4.png");
+
+  this.load.image("bullet", "/static/assets/images/Bullet.png");
+
+  //Text Graphics
+  this.load.image("title", "/static/assets/text/Title.png");
+
+  //Set Pieces
+  this.load.image("rectangle", "/static/assets/setPieces/Rectangle.png");
 
   //Sprites
 
@@ -64,15 +91,20 @@ function preload() {
       frameWidth: 459,
       frameHeight: 518,
     });
-
-    this.load.spritesheet('char2_jump', '/static/assets/sprites/Characters/2/Jump.png', {
-      frameWidth: 459,
-      frameHeight: 513,
-    });
   
     this.load.spritesheet('char2_idle', '/static/assets/sprites/Characters/2/Idle.png', {
       frameWidth: 459,
       frameHeight: 492,
+    });
+
+    this.load.spritesheet('char2_jump', '/static/assets/sprites/Characters/2/Jump_Static.png', {
+      frameWidth: 459,
+      frameHeight: 484,
+    });
+  
+    this.load.spritesheet('char2_run_shoot', '/static/assets/sprites/Characters/2/Run_Shoot.png', {
+      frameWidth: 459,
+      frameHeight: 518,
     });
   
     this.load.spritesheet('char2_idle_shoot', '/static/assets/sprites/Characters/2/Idle_Shoot.png', {
@@ -82,34 +114,86 @@ function preload() {
 }
 
 function create() {
+  //Images
   this.add.image(800, 500, "dry_erase_board");
 
-  var stickyNote = this.add.image(85, 70, "sticky_note");
+  var stickyNote = this.add.image(85, 60, "sticky_note");
   stickyNote.setDisplaySize(105, 95);
   stickyNote.setRotation(-0.2)
 
-  var stickyNote2 = this.add.image(285, 70, "sticky_note_2");
+  var stickyNote2 = this.add.image(215, 70, "sticky_note_2");
   stickyNote2.setDisplaySize(105, 105);
   stickyNote2.setRotation(.2)
 
-  var stickyNote3 = this.add.image(1535, 70, "sticky_note_3");
-  stickyNote3.setDisplaySize(105, 105);
-  stickyNote3.setRotation(0)
+  var livesZero = this.add.image(1535, 70, "lives_0");
+  livesZero.setDisplaySize(105, 105);
+  livesZero.setRotation(0)
 
-  //x=39, y = 25, height = 950-35, width = 1565 - 39
-  this.physics.world.setBounds(39, 25, 1526, 920, true, true, true, true);
+  var livesOne = this.add.image(1535, 70, "lives_1");
+  livesOne.setDisplaySize(105, 105);
+  livesOne.setRotation(0)
 
+  var livesTwo = this.add.image(1535, 70, "lives_2");
+  livesTwo.setDisplaySize(105, 105);
+  livesTwo.setRotation(0)
+
+  var livesThree = this.add.image(1535, 70, "lives_3");
+  livesThree.setDisplaySize(105, 105);
+  livesThree.setRotation(0)
+
+  var stickyNote4 = this.add.image(1400, 60, "sticky_note_4");
+  stickyNote4.setDisplaySize(105, 105);
+  stickyNote4.setRotation(.15)
+
+  healthZero = this.add.image(200, 150, "health_0");
+  healthZero.setScale(0.45)
+
+  healthOne = this.add.image(200, 150, "health_1");
+  healthOne.setScale(0.45)
+
+  healthTwo = this.add.image(200, 150, "health_2");
+  healthTwo.setScale(0.45)
+
+  healthThree = this.add.image(200, 150, "health_3");
+  healthThree.setScale(0.45)
+
+  healthFour = this.add.image(200, 150, "health_4");
+  healthFour.setScale(0.45)
+
+  //Text
+  var title = this.add.image(800, 90, "title");
+  title.setScale(.75)
+
+  //Set Pieces
+  platforms = this.physics.add.staticGroup();
+  platforms.create(800, 800, "rectangle");
+
+  //Game
   const self = this
   this.socket = io()
-  this.otherPlayers = this.physics.add.group({ collideWorldBounds: true })
+ 
+  this.playerCollider = this.physics.add.group({ collideWorldBounds: true, immovable: true  })
+  this.otherPlayers = this.physics.add.group({ collideWorldBounds: true, immovable: true })
+  this.bullets = this.physics.add.group({ collideWorldBounds: true, allowGravity: false })
+  this.otherPlayerBullets = this.physics.add.group({ collideWorldBounds: true, allowGravity: false })
+
+  this.physics.world.setBounds(39, 25, 1526, 925, true, true, true, true);
+  this.physics.add.collider(this.playerCollider, platforms);
+  this.physics.add.collider(this.otherPlayers, platforms);
+  this.physics.add.collider(this.playerCollider, this.otherPlayerBullets, function(obj1, obj2){ playerHit(self, obj1, obj2);}, null, this);
+  this.physics.add.collider(this.otherPlayers, this.bullets, function(obj1, obj2){ otherPlayerHit(self, obj1, obj2);}, null, this);
 
   //Enable Keyboard Inputs
   cursors = this.input.keyboard.createCursorKeys();
 
   //LOG PLAYER OBJECT FOR TESTING
   this.input.keyboard.on('keydown-P', function () {
-    console.log("PLAYER:");
-    console.log(this.player);
+    console.log(self.player);
+  });
+
+  //SPACEBAR SHOOT
+  this.input.keyboard.on('keydown-SPACE', function () {
+    shoot(self, self.player);
   });
 
   //-----------------------------------------------------------------------//
@@ -187,6 +271,12 @@ function create() {
       repeat: -1,
     });
   
+    this.anims.create({
+      key: "char2_run_shoot",
+      frames: this.anims.generateFrameNumbers("char2_run_shoot"),
+      frameRate: 25,
+      repeat: -1,
+    });
       this.anims.create({
       key: "char2_idle_shoot",
       frames: this.anims.generateFrameNumbers("char2_idle_shoot"),
@@ -230,12 +320,22 @@ function create() {
 
         if (playerInfo.direction === "right") {
           otherPlayer.setFlipX(false);
-          otherPlayer.anims.play("char2_run", true);
+
+          if (playerInfo.isShooting) {
+              otherPlayer.anims.play("char2_run_shoot", true);
+          } else {
+              otherPlayer.anims.play("char2_run", true);
+          }
         }
 
         if (playerInfo.direction === "left") {
           otherPlayer.setFlipX(true);
-          otherPlayer.anims.play("char2_run", true);
+          
+          if (playerInfo.isShooting) {
+              otherPlayer.anims.play("char2_run_shoot", true);
+          } else {
+              otherPlayer.anims.play("char2_run", true);
+          }
         }
 
         if (playerInfo.direction === "idle") {
@@ -259,6 +359,7 @@ function create() {
             otherPlayer.setFlipX(false);
           }
 
+          //TODO: JUMP SHOOT
           otherPlayer.anims.play("char2_jump", true);
         }
 
@@ -272,13 +373,16 @@ function addPlayer(self, playerInfo) {
 
   //var username = prompt("Please Enter Your Name", "")
 
-  self.player = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'char1_idle')
+  self.player = self.physics.add.sprite(200, 850, 'char1_idle')
     .setDisplaySize(125, 125)
     .setBounce(0.1)
     .setCollideWorldBounds(true)
   
-  self.player.lives = 5;
-  self.player.hitPoints = 3;
+  self.player.playerId = self.socket.id;
+  self.player.lives = 3;
+  self.player.hitPoints = 4;
+
+  self.playerCollider.add(self.player);
   //self.player.username = username;
 
   //TODO: SOCKET EVENT UPDATE PLAYER OBJECT WITH USERNAME MATCH ON SOCKET ID
@@ -294,12 +398,77 @@ function addOtherPlayers(self, playerInfo) {
   self.otherPlayers.add(otherPlayer)
 }
 
+function shoot(self, player) {
+  console.log("PLAYER " + player.playerId + " SHOOT")
+
+  if (facingRight) {
+    const bullet = self.bullets.create(player.x + 75, player.y - 10, 'bullet')
+    bullet.setDisplaySize(20, 10);
+    bullet.setVelocityX(1000);
+    bullet.playerId = player.playerId;
+    bullet.body.onWorldBounds = true;
+  } else {
+    const bullet = self.bullets.create(player.x - 75, player.y - 10, 'bullet')
+    bullet.setDisplaySize(20, 10);
+    bullet.setVelocityX(-1000);
+    bullet.playerId = player.playerId;
+    bullet.body.onWorldBounds = true;
+  }
+}
+
+function playerHit(self, player, bullet) {
+  console.log("PLAYER " + player.playerId + " HIT BY " + bullet.playerId);
+
+  player.hitPoints = player.hitPoints - 1;
+
+  switch (player.hitPoints) {
+    case 4:
+      // code block
+      break;
+    case 3:
+      healthFour.visible(false)
+      break;
+    case 2:
+      healthFour.visible(false)
+      healthThree.visible(false)
+      break;
+    case 1:
+      healthFour.visible(false)
+      healthThree.visible(false)
+      healthTwo.visible(false)
+      break;
+    case 0:
+      healthFour.visible(false)
+      healthThree.visible(false)
+      healthTwo.visible(false)
+      healthOne.visible(false)
+      break;
+    default:
+      console.log("REMOVE LIFE")
+    //TODO: SUBTRACT LIFE
+  }
+}
+
+function otherPlayerHit(self, player, bullet) {
+  console.log("OTHER PLAYER " + player.playerId + " HIT");
+  //TODO: TALLY POINTS IF OTHER PLAYER KILLED?
+}
+   
+
 function update() {
 
   //-----------------------------------------------------------------------//
+
+  //Remove Spent Bullets
+  this.bullets.children.iterate((bullet) => {
+    if (bullet != null) {
+       if(bullet.body.blocked.right || bullet.body.blocked.left) {
+        bullet.destroy()
+      }
+    }  
+  });
   
   //Player Movement
-
   if (this.player) {
 
     var direction;
@@ -397,3 +566,4 @@ function update() {
     this.player.oldPosition = currPosition
   }
 }
+
