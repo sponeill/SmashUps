@@ -111,6 +111,11 @@ function preload() {
       frameWidth: 459,
       frameHeight: 492,
     });
+  
+    this.load.spritesheet('char2_jump_shoot', '/static/assets/sprites/Characters/2/Jump_Static_Shoot.png', {
+      frameWidth: 459,
+      frameHeight: 484,
+    });
 }
 
 function create() {
@@ -120,30 +125,37 @@ function create() {
   var stickyNote = this.add.image(85, 60, "sticky_note");
   stickyNote.setDisplaySize(105, 95);
   stickyNote.setRotation(-0.2)
+  stickyNote.setDepth(1000)
 
   var stickyNote2 = this.add.image(215, 70, "sticky_note_2");
   stickyNote2.setDisplaySize(105, 105);
   stickyNote2.setRotation(.2)
+  stickyNote2.setDepth(1000)
 
   var livesZero = this.add.image(1535, 70, "lives_0");
   livesZero.setDisplaySize(105, 105);
   livesZero.setRotation(0)
+  livesZero.setDepth(1000)
 
   var livesOne = this.add.image(1535, 70, "lives_1");
   livesOne.setDisplaySize(105, 105);
   livesOne.setRotation(0)
+  livesOne.setDepth(1000)
 
   var livesTwo = this.add.image(1535, 70, "lives_2");
   livesTwo.setDisplaySize(105, 105);
   livesTwo.setRotation(0)
+  livesTwo.setDepth(1000)
 
   var livesThree = this.add.image(1535, 70, "lives_3");
   livesThree.setDisplaySize(105, 105);
   livesThree.setRotation(0)
+  livesThree.setDepth(1000)
 
   var stickyNote4 = this.add.image(1400, 60, "sticky_note_4");
   stickyNote4.setDisplaySize(105, 105);
   stickyNote4.setRotation(.15)
+  stickyNote4.setDepth(1000)
 
   healthZero = this.add.image(200, 150, "health_0");
   healthZero.setScale(0.45)
@@ -166,14 +178,17 @@ function create() {
 
   //Set Pieces
   platforms = this.physics.add.staticGroup();
-  platforms.create(800, 800, "rectangle");
+  platforms.create(800, 750, "rectangle");
+  platforms.create(800, 300, "rectangle");
+  platforms.create(1200, 510, "rectangle");
+  platforms.create(400, 510, "rectangle");
 
   //Game
   const self = this
   this.socket = io()
  
-  this.playerCollider = this.physics.add.group({ collideWorldBounds: true, immovable: true  })
-  this.otherPlayers = this.physics.add.group({ collideWorldBounds: true, immovable: true })
+  this.playerCollider = this.physics.add.group({ collideWorldBounds: true })
+  this.otherPlayers = this.physics.add.group({ collideWorldBounds: true })
   this.bullets = this.physics.add.group({ collideWorldBounds: true, allowGravity: false })
   this.otherPlayerBullets = this.physics.add.group({ collideWorldBounds: true, allowGravity: false })
 
@@ -182,6 +197,7 @@ function create() {
   this.physics.add.collider(this.otherPlayers, platforms);
   this.physics.add.collider(this.playerCollider, this.otherPlayerBullets, function(obj1, obj2){ playerHit(self, obj1, obj2);}, null, this);
   this.physics.add.collider(this.otherPlayers, this.bullets, function(obj1, obj2){ otherPlayerHit(self, obj1, obj2);}, null, this);
+  
 
   //Enable Keyboard Inputs
   cursors = this.input.keyboard.createCursorKeys();
@@ -277,9 +293,17 @@ function create() {
       frameRate: 25,
       repeat: -1,
     });
-      this.anims.create({
+  
+    this.anims.create({
       key: "char2_idle_shoot",
       frames: this.anims.generateFrameNumbers("char2_idle_shoot"),
+      frameRate: 25,
+      repeat: -1,
+    });
+  
+    this.anims.create({
+      key: "char2_jump_shoot",
+      frames: this.anims.generateFrameNumbers("char2_jump_shoot"),
       frameRate: 25,
       repeat: -1,
     });
@@ -310,22 +334,36 @@ function create() {
     })
   })
 
+  //Handle Other Player Movements
   this.socket.on('playerMoved', function (playerInfo) {
     self.otherPlayers.getChildren().forEach(function (otherPlayer) {
       if (playerInfo.playerId === otherPlayer.playerId) {
         
         otherPlayer.setPosition(playerInfo.x, playerInfo.y)
 
-        //TODO: ANIMATIONS FOR playerInfo.isShooting == true
-
         if (playerInfo.direction === "right") {
           otherPlayer.setFlipX(false);
 
-          if (playerInfo.isShooting) {
+            if (playerInfo.isShooting) {
               otherPlayer.anims.play("char2_run_shoot", true);
-          } else {
+            } else {
               otherPlayer.anims.play("char2_run", true);
           }
+          
+          // TODO: THIS CAUSES STUTTERING WHEN RUNNING ON THE GROUND BECAUSE BLOCKED.DOWN IS NOT ALWAYS TRUE
+          // if (otherPlayer.body.blocked.down) {
+          //   if (playerInfo.isShooting) {
+          //     otherPlayer.anims.play("char2_run_shoot", true);
+          //   } else {
+          //     otherPlayer.anims.play("char2_run", true);
+          //   }
+          // } else {
+          //   if (playerInfo.isShooting) {
+          //     otherPlayer.anims.play("char2_jump_shoot", true);
+          //   } else {
+          //     otherPlayer.anims.play("char2_jump", true);
+          //   }
+          // }
         }
 
         if (playerInfo.direction === "left") {
@@ -359,11 +397,12 @@ function create() {
             otherPlayer.setFlipX(false);
           }
 
-          //TODO: JUMP SHOOT
-          otherPlayer.anims.play("char2_jump", true);
+          if (playerInfo.isShooting) {
+            otherPlayer.anims.play("char2_jump_shoot", true);
+          } else {
+            otherPlayer.anims.play("char2_jump", true);
+          }
         }
-
-        //TODO: Default to Jump animation if player is in the air and also pushing left or right
       }
     })
   })
@@ -401,19 +440,19 @@ function addOtherPlayers(self, playerInfo) {
 function shoot(self, player) {
   console.log("PLAYER " + player.playerId + " SHOOT")
 
+  var bullet;
+
   if (facingRight) {
-    const bullet = self.bullets.create(player.x + 75, player.y - 10, 'bullet')
-    bullet.setDisplaySize(20, 10);
+    bullet = self.bullets.create(player.x + 75, player.y - 10, 'bullet')
     bullet.setVelocityX(1000);
-    bullet.playerId = player.playerId;
-    bullet.body.onWorldBounds = true;
   } else {
-    const bullet = self.bullets.create(player.x - 75, player.y - 10, 'bullet')
-    bullet.setDisplaySize(20, 10);
+    bullet = self.bullets.create(player.x - 75, player.y - 10, 'bullet')
     bullet.setVelocityX(-1000);
-    bullet.playerId = player.playerId;
-    bullet.body.onWorldBounds = true;
   }
+
+  bullet.setDisplaySize(20, 10);
+   bullet.playerId = player.playerId;
+  bullet.body.onWorldBounds = true;
 }
 
 function playerHit(self, player, bullet) {
@@ -473,6 +512,8 @@ function update() {
 
     var direction;
 
+    //TODO: ONLY PLAY FIRE ANIMATION ONCE DURING SPACE BAR HOLD DOWN. LISTENER EVENT FOR SPACEBAR KEYUP?
+
     //Move Left
     if (cursors.left.isDown) {
       direction = "left";
@@ -480,19 +521,26 @@ function update() {
       this.player.setVelocityX(-200);
       this.player.setFlipX(true);
 
-      if (this.player.body.blocked.down) {
-        if (cursors.space.isDown) {
+      if (cursors.space.isDown) {
           this.player.anims.play("char1_run_shoot", true);
         } else {
           this.player.anims.play("char1_run", true);
         }
-      } else {
-        if (cursors.space.isDown) {
-          this.player.anims.play("char1_jump_shoot", true);
-        } else {
-          this.player.anims.play("char1_jump", true);
-        }
-      }
+
+      //TODO: REMOVE? THESE BLOCKS PREVENTED THE RUNNING ANIMATION IF STILL IN THE AIR BUT ISN'T WORKING WITH OTHER PLAYERS
+      // if (this.player.body.blocked.down) {
+      //   if (cursors.space.isDown) {
+      //     this.player.anims.play("char1_run_shoot", true);
+      //   } else {
+      //     this.player.anims.play("char1_run", true);
+      //   }
+      // } else {
+      //   if (cursors.space.isDown) {
+      //     this.player.anims.play("char1_jump_shoot", true);
+      //   } else {
+      //     this.player.anims.play("char1_jump", true);
+      //   }
+      // }
     //Move Right
     } else if (cursors.right.isDown) {
       direction = "right";
@@ -500,19 +548,26 @@ function update() {
       this.player.setFlipX(false);
       this.player.setVelocityX(200);
 
-      if (this.player.body.blocked.down) {
-        if (cursors.space.isDown) {
+      if (cursors.space.isDown) {
           this.player.anims.play("char1_run_shoot", true);
         } else {
           this.player.anims.play("char1_run", true);
         }
-      } else {
-         if (cursors.space.isDown) {
-          this.player.anims.play("char1_jump_shoot", true);
-        } else {
-          this.player.anims.play("char1_jump", true);
-        }
-      }
+
+      //TODO: REMOVE? THESE BLOCKS PREVENTED THE RUNNING ANIMATION IF STILL IN THE AIR BUT ISN'T WORKING WITH OTHER PLAYERS
+      // if (this.player.body.blocked.down) {
+      //   if (cursors.space.isDown) {
+      //     this.player.anims.play("char1_run_shoot", true);
+      //   } else {
+      //     this.player.anims.play("char1_run", true);
+      //   }
+      // } else {
+      //    if (cursors.space.isDown) {
+      //     this.player.anims.play("char1_jump_shoot", true);
+      //   } else {
+      //     this.player.anims.play("char1_jump", true);
+      //   }
+      // }
     //Idle
     } else {
       direction = "idle";
@@ -532,7 +587,7 @@ function update() {
       } 
 
       if (this.player.body.blocked.down) {
-        this.player.setVelocityY(-380);
+        this.player.setVelocityY(-480);
       }
 
       if (cursors.space.isDown) {
