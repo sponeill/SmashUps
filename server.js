@@ -49,6 +49,10 @@ io.on('connection', function (socket) {
 
     socket.broadcast.emit('playerMoved', players[socket.id])
   })
+
+  socket.on('bulletCreated', function (bulletData) {
+    socket.broadcast.emit('addBullet', bulletData)
+  })
 })
 
 function getRandomColor() {

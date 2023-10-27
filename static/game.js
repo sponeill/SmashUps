@@ -1,20 +1,20 @@
 var config = {
   type: Phaser.AUTO,
-  parent: 'phaser-example',
+  parent: "phaser-example",
   width: 1600,
   height: 1000,
-  backgroundColor: '#ffffff',
+  backgroundColor: "#ffffff",
   physics: {
-    default: 'arcade',
+    default: "arcade",
     arcade: {
       debug: true,
-      gravity: { y: 400 }
-    }
+      gravity: { y: 450 },
+    },
   },
-  scene: { preload, create, update }
-}
+  scene: { preload, create, update },
+};
 
-var game = new Phaser.Game(config)
+var game = new Phaser.Game(config);
 
 var player;
 var platforms;
@@ -24,21 +24,27 @@ var healthOne;
 var healthTwo;
 var healthThree;
 var healthFour;
+var livesThree;
+var livesTwo;
+var livesOne;
+var livesZero;
+var lives = 3;
+var waitingForRespawn = false;
 
 function preload() {
   //Images
   this.load.image("dry_erase_board", "/static/assets/images/DryEraseBoard.png");
-  
+
   this.load.image("sticky_note", "/static/assets/images/PaulWasHere.png");
   this.load.image("sticky_note_2", "/static/assets/images/WhosHosting.png");
   this.load.image("sticky_note_3", "/static/assets/images/StickyNote3.png");
   this.load.image("sticky_note_4", "/static/assets/images/AS400s.png");
- 
+
   this.load.image("lives_3", "/static/assets/images/Lives_3.png");
   this.load.image("lives_2", "/static/assets/images/Lives_2.png");
   this.load.image("lives_1", "/static/assets/images/Lives_1.png");
   this.load.image("lives_0", "/static/assets/images/Lives_0.png");
-  
+
   this.load.image("health_0", "/static/assets/images/Health_0.png");
   this.load.image("health_1", "/static/assets/images/Health_1.png");
   this.load.image("health_2", "/static/assets/images/Health_2.png");
@@ -56,66 +62,123 @@ function preload() {
   //Sprites
 
   //Character 1
-    this.load.spritesheet('char1_run', '/static/assets/sprites/Characters/1/Run.png', {
+  this.load.spritesheet(
+    "char1_run",
+    "/static/assets/sprites/Characters/1/Run.png",
+    {
       frameWidth: 459,
       frameHeight: 476,
-     });
-  
-    this.load.spritesheet('char1_idle', '/static/assets/sprites/Characters/1/Idle.png', {
+    }
+  );
+
+  this.load.spritesheet(
+    "char1_idle",
+    "/static/assets/sprites/Characters/1/Idle.png",
+    {
       frameWidth: 459,
       frameHeight: 456,
-    });
-  
-    this.load.spritesheet('char1_jump', '/static/assets/sprites/Characters/1/Jump_Static.png', {
+    }
+  );
+
+  this.load.spritesheet(
+    "char1_jump",
+    "/static/assets/sprites/Characters/1/Jump_Static.png",
+    {
       frameWidth: 459,
       frameHeight: 486,
-    });
-  
-    this.load.spritesheet('char1_run_shoot', '/static/assets/sprites/Characters/1/Run_Shoot.png', {
+    }
+  );
+
+  this.load.spritesheet(
+    "char1_run_shoot",
+    "/static/assets/sprites/Characters/1/Run_Shoot.png",
+    {
       frameWidth: 459,
       frameHeight: 476,
-    });
-  
-    this.load.spritesheet('char1_idle_shoot', '/static/assets/sprites/Characters/1/Idle_Shoot.png', {
+    }
+  );
+
+  this.load.spritesheet(
+    "char1_idle_shoot",
+    "/static/assets/sprites/Characters/1/Idle_Shoot.png",
+    {
       frameWidth: 459,
       frameHeight: 456,
-    });
-  
-    this.load.spritesheet('char1_jump_shoot', '/static/assets/sprites/Characters/1/Jump_Static_Shoot.png', {
+    }
+  );
+
+  this.load.spritesheet(
+    "char1_jump_shoot",
+    "/static/assets/sprites/Characters/1/Jump_Static_Shoot.png",
+    {
       frameWidth: 459,
       frameHeight: 486,
-    });
+    }
+  );
+
+  this.load.spritesheet(
+    "char1_dead",
+    "/static/assets/sprites/Characters/1/Dead.png",
+    {
+      frameWidth: 535,
+      frameHeight: 460,
+    }
+  );
 
   //Character 2
-    this.load.spritesheet('char2_run', '/static/assets/sprites/Characters/2/Run.png', {
+  this.load.spritesheet(
+    "char2_run",
+    "/static/assets/sprites/Characters/2/Run.png",
+    {
       frameWidth: 459,
       frameHeight: 518,
-    });
-  
-    this.load.spritesheet('char2_idle', '/static/assets/sprites/Characters/2/Idle.png', {
-      frameWidth: 459,
-      frameHeight: 492,
-    });
+    }
+  );
 
-    this.load.spritesheet('char2_jump', '/static/assets/sprites/Characters/2/Jump_Static.png', {
-      frameWidth: 459,
-      frameHeight: 484,
-    });
-  
-    this.load.spritesheet('char2_run_shoot', '/static/assets/sprites/Characters/2/Run_Shoot.png', {
-      frameWidth: 459,
-      frameHeight: 518,
-    });
-  
-    this.load.spritesheet('char2_idle_shoot', '/static/assets/sprites/Characters/2/Idle_Shoot.png', {
+  this.load.spritesheet(
+    "char2_idle",
+    "/static/assets/sprites/Characters/2/Idle.png",
+    {
       frameWidth: 459,
       frameHeight: 492,
-    });
-  
-    this.load.spritesheet('char2_jump_shoot', '/static/assets/sprites/Characters/2/Jump_Static_Shoot.png', {
+    }
+  );
+
+  this.load.spritesheet(
+    "char2_jump",
+    "/static/assets/sprites/Characters/2/Jump_Static.png",
+    {
       frameWidth: 459,
       frameHeight: 484,
-    });
+    }
+  );
+
+  this.load.spritesheet(
+    "char2_run_shoot",
+    "/static/assets/sprites/Characters/2/Run_Shoot.png",
+    {
+      frameWidth: 459,
+      frameHeight: 518,
+    }
+  );
+
+  this.load.spritesheet(
+    "char2_idle_shoot",
+    "/static/assets/sprites/Characters/2/Idle_Shoot.png",
+    {
+      frameWidth: 459,
+      frameHeight: 492,
+    }
+  );
+
+  this.load.spritesheet(
+    "char2_jump_shoot",
+    "/static/assets/sprites/Characters/2/Jump_Static_Shoot.png",
+    {
+      frameWidth: 459,
+      frameHeight: 484,
+    }
+  );
 }
 
 function create() {
@@ -124,57 +187,57 @@ function create() {
 
   var stickyNote = this.add.image(85, 60, "sticky_note");
   stickyNote.setDisplaySize(105, 95);
-  stickyNote.setRotation(-0.2)
-  stickyNote.setDepth(1000)
+  stickyNote.setRotation(-0.2);
+  stickyNote.setDepth(1000);
 
   var stickyNote2 = this.add.image(215, 70, "sticky_note_2");
   stickyNote2.setDisplaySize(105, 105);
-  stickyNote2.setRotation(.2)
-  stickyNote2.setDepth(1000)
+  stickyNote2.setRotation(0.2);
+  stickyNote2.setDepth(1000);
 
-  var livesZero = this.add.image(1535, 70, "lives_0");
+  livesZero = this.add.image(1535, 70, "lives_0");
   livesZero.setDisplaySize(105, 105);
-  livesZero.setRotation(0)
-  livesZero.setDepth(1000)
+  livesZero.setRotation(0);
+  livesZero.setDepth(1000);
 
-  var livesOne = this.add.image(1535, 70, "lives_1");
+  livesOne = this.add.image(1535, 70, "lives_1");
   livesOne.setDisplaySize(105, 105);
-  livesOne.setRotation(0)
-  livesOne.setDepth(1000)
+  livesOne.setRotation(0);
+  livesOne.setDepth(1000);
 
-  var livesTwo = this.add.image(1535, 70, "lives_2");
+  livesTwo = this.add.image(1535, 70, "lives_2");
   livesTwo.setDisplaySize(105, 105);
-  livesTwo.setRotation(0)
-  livesTwo.setDepth(1000)
+  livesTwo.setRotation(0);
+  livesTwo.setDepth(1000);
 
-  var livesThree = this.add.image(1535, 70, "lives_3");
+  livesThree = this.add.image(1535, 70, "lives_3");
   livesThree.setDisplaySize(105, 105);
-  livesThree.setRotation(0)
-  livesThree.setDepth(1000)
+  livesThree.setRotation(0);
+  livesThree.setDepth(1000);
 
   var stickyNote4 = this.add.image(1400, 60, "sticky_note_4");
   stickyNote4.setDisplaySize(105, 105);
-  stickyNote4.setRotation(.15)
-  stickyNote4.setDepth(1000)
+  stickyNote4.setRotation(0.15);
+  stickyNote4.setDepth(1000);
 
   healthZero = this.add.image(200, 150, "health_0");
-  healthZero.setScale(0.45)
+  healthZero.setScale(0.45);
 
   healthOne = this.add.image(200, 150, "health_1");
-  healthOne.setScale(0.45)
+  healthOne.setScale(0.45);
 
   healthTwo = this.add.image(200, 150, "health_2");
-  healthTwo.setScale(0.45)
+  healthTwo.setScale(0.45);
 
   healthThree = this.add.image(200, 150, "health_3");
-  healthThree.setScale(0.45)
+  healthThree.setScale(0.45);
 
   healthFour = this.add.image(200, 150, "health_4");
-  healthFour.setScale(0.45)
+  healthFour.setScale(0.45);
 
   //Text
   var title = this.add.image(800, 90, "title");
-  title.setScale(.75)
+  title.setScale(0.75);
 
   //Set Pieces
   platforms = this.physics.add.staticGroup();
@@ -184,195 +247,218 @@ function create() {
   platforms.create(400, 510, "rectangle");
 
   //Game
-  const self = this
-  this.socket = io()
- 
-  this.playerCollider = this.physics.add.group({ collideWorldBounds: true })
-  this.otherPlayers = this.physics.add.group({ collideWorldBounds: true })
-  this.bullets = this.physics.add.group({ collideWorldBounds: true, allowGravity: false })
-  this.otherPlayerBullets = this.physics.add.group({ collideWorldBounds: true, allowGravity: false })
+  const self = this;
+  this.socket = io();
+
+  this.playerCollider = this.physics.add.group({ collideWorldBounds: true });
+  this.otherPlayers = this.physics.add.group({ collideWorldBounds: true });
+  this.bullets = this.physics.add.group({
+    collideWorldBounds: true,
+    allowGravity: false,
+  });
+  this.otherPlayerBullets = this.physics.add.group({
+    collideWorldBounds: true,
+    allowGravity: false,
+  });
 
   this.physics.world.setBounds(39, 25, 1526, 925, true, true, true, true);
   this.physics.add.collider(this.playerCollider, platforms);
   this.physics.add.collider(this.otherPlayers, platforms);
-  this.physics.add.collider(this.playerCollider, this.otherPlayerBullets, function(obj1, obj2){ playerHit(self, obj1, obj2);}, null, this);
-  this.physics.add.collider(this.otherPlayers, this.bullets, function(obj1, obj2){ otherPlayerHit(self, obj1, obj2);}, null, this);
-  
+  this.physics.add.collider(
+    this.playerCollider,
+    this.otherPlayerBullets,
+    function (obj1, obj2) {
+      playerHit(self, obj1, obj2);
+    },
+    null,
+    this
+  );
+  this.physics.add.collider(
+    this.otherPlayers,
+    this.bullets,
+    function (obj1, obj2) {
+      otherPlayerHit(self, obj1, obj2);
+    },
+    null,
+    this
+  );
 
   //Enable Keyboard Inputs
   cursors = this.input.keyboard.createCursorKeys();
 
   //LOG PLAYER OBJECT FOR TESTING
-  this.input.keyboard.on('keydown-P', function () {
+  this.input.keyboard.on("keydown-P", function () {
     console.log(self.player);
   });
 
   //SPACEBAR SHOOT
-  this.input.keyboard.on('keydown-SPACE', function () {
+  this.input.keyboard.on("keydown-SPACE", function () {
     shoot(self, self.player);
   });
 
-  //-----------------------------------------------------------------------//
-  
-    //Create Player Objects
+  //Create Animations
 
-    //NOTE: THIS IS HANDLED IN THE ADDPLAYER AND ADDOTHERPLAYERS FUNCTIONS
+  //Character 1
+  this.anims.create({
+    key: "char1_run",
+    frames: this.anims.generateFrameNumbers("char1_run"),
+    frameRate: 25,
+    repeat: -1,
+  });
 
-  //-----------------------------------------------------------------------//
-  
-    //Create Animations
+  this.anims.create({
+    key: "char1_jump",
+    frames: this.anims.generateFrameNumbers("char1_jump"),
+    frameRate: 25,
+    repeat: 0,
+  });
 
-    //Character 1
-    this.anims.create({
-      key: "char1_run",
-      frames: this.anims.generateFrameNumbers("char1_run"),
-      frameRate: 25,
-      repeat: -1,
-    });
-  
-    this.anims.create({
-      key: "char1_jump",
-      frames: this.anims.generateFrameNumbers("char1_jump"),
-      frameRate: 25,
-      repeat: 0,
-    });
-  
-    this.anims.create({
-      key: "char1_idle",
-      frames: this.anims.generateFrameNumbers("char1_idle"),
-      frameRate: 25,
-      repeat: -1,
-    });
-  
-    this.anims.create({
-      key: "char1_run_shoot",
-      frames: this.anims.generateFrameNumbers("char1_run_shoot"),
-      frameRate: 25,
-      repeat: -1,
-    });
-  
-    this.anims.create({
-      key: "char1_idle_shoot",
-      frames: this.anims.generateFrameNumbers("char1_idle_shoot"),
-      frameRate: 25,
-      repeat: -1,
-    });
-  
-    this.anims.create({
-      key: "char1_jump_shoot",
-      frames: this.anims.generateFrameNumbers("char1_jump_shoot"),
-      frameRate: 25,
-      repeat: -1,
-    });
-  
-    //Character 2
-    this.anims.create({
-      key: "char2_run",
-      frames: this.anims.generateFrameNumbers("char2_run"),
-      frameRate: 25,
-      repeat: -1,
-    });
+  this.anims.create({
+    key: "char1_idle",
+    frames: this.anims.generateFrameNumbers("char1_idle"),
+    frameRate: 25,
+    repeat: -1,
+  });
 
-    this.anims.create({
-      key: "char2_jump",
-      frames: this.anims.generateFrameNumbers("char2_jump"),
-      frameRate: 25,
-      repeat: -1,
-    });
-  
-    this.anims.create({
-      key: "char2_idle",
-      frames: this.anims.generateFrameNumbers("char2_idle"),
-      frameRate: 25,
-      repeat: -1,
-    });
-  
-    this.anims.create({
-      key: "char2_run_shoot",
-      frames: this.anims.generateFrameNumbers("char2_run_shoot"),
-      frameRate: 25,
-      repeat: -1,
-    });
-  
-    this.anims.create({
-      key: "char2_idle_shoot",
-      frames: this.anims.generateFrameNumbers("char2_idle_shoot"),
-      frameRate: 25,
-      repeat: -1,
-    });
-  
-    this.anims.create({
-      key: "char2_jump_shoot",
-      frames: this.anims.generateFrameNumbers("char2_jump_shoot"),
-      frameRate: 25,
-      repeat: -1,
-    });
+  this.anims.create({
+    key: "char1_run_shoot",
+    frames: this.anims.generateFrameNumbers("char1_run_shoot"),
+    frameRate: 25,
+    repeat: -1,
+  });
+
+  this.anims.create({
+    key: "char1_idle_shoot",
+    frames: this.anims.generateFrameNumbers("char1_idle_shoot"),
+    frameRate: 25,
+    repeat: -1,
+  });
+
+  this.anims.create({
+    key: "char1_jump_shoot",
+    frames: this.anims.generateFrameNumbers("char1_jump_shoot"),
+    frameRate: 25,
+    repeat: -1,
+  });
+
+  this.anims.create({
+    key: "char1_dead",
+    frames: this.anims.generateFrameNumbers("char1_dead"),
+    frameRate: 14,
+    repeat: 0,
+  });
+
+  //Character 2
+  this.anims.create({
+    key: "char2_run",
+    frames: this.anims.generateFrameNumbers("char2_run"),
+    frameRate: 25,
+    repeat: -1,
+  });
+
+  this.anims.create({
+    key: "char2_jump",
+    frames: this.anims.generateFrameNumbers("char2_jump"),
+    frameRate: 25,
+    repeat: -1,
+  });
+
+  this.anims.create({
+    key: "char2_idle",
+    frames: this.anims.generateFrameNumbers("char2_idle"),
+    frameRate: 25,
+    repeat: -1,
+  });
+
+  this.anims.create({
+    key: "char2_run_shoot",
+    frames: this.anims.generateFrameNumbers("char2_run_shoot"),
+    frameRate: 25,
+    repeat: -1,
+  });
+
+  this.anims.create({
+    key: "char2_idle_shoot",
+    frames: this.anims.generateFrameNumbers("char2_idle_shoot"),
+    frameRate: 25,
+    repeat: -1,
+  });
+
+  this.anims.create({
+    key: "char2_jump_shoot",
+    frames: this.anims.generateFrameNumbers("char2_jump_shoot"),
+    frameRate: 25,
+    repeat: -1,
+  });
 
   //-----------------------------------------------------------------------//
 
   //Socket Events
 
-  this.socket.on('currentPlayers', function (players) {
+  this.socket.on("currentPlayers", function (players) {
     Object.keys(players).forEach(function (id) {
       if (players[id].playerId === self.socket.id) {
-        addPlayer(self, players[id])
+        addPlayer(self, players[id]);
       } else {
-        addOtherPlayers(self, players[id])
+        addOtherPlayers(self, players[id]);
       }
-    })
-  })
+    });
+  });
 
-  this.socket.on('newPlayer', function (playerInfo) {
-    addOtherPlayers(self, playerInfo)
-  })
+  this.socket.on("newPlayer", function (playerInfo) {
+    addOtherPlayers(self, playerInfo);
+  });
 
-  this.socket.on('playerDisconnected', function (playerId) {
+  this.socket.on("addBullet", function (bulletData) {
+    const newBullet = self.otherPlayerBullets.create(
+      bulletData.x,
+      bulletData.y,
+      "bullet"
+    );
+
+    newBullet.setDisplaySize(20, 10);
+    newBullet.playerId = bulletData.playerId;
+    newBullet.id = bulletData.Id;
+    newBullet.body.onWorldBounds = true;
+
+    if (bulletData.facingRight) {
+      newBullet.setVelocityX(1000);
+    } else {
+      newBullet.setVelocityX(-1000);
+    }
+  });
+
+  this.socket.on("playerDisconnected", function (playerId) {
     self.otherPlayers.getChildren().forEach(function (otherPlayer) {
       if (playerId === otherPlayer.playerId) {
-        otherPlayer.destroy()
+        otherPlayer.destroy();
       }
-    })
-  })
+    });
+  });
 
   //Handle Other Player Movements
-  this.socket.on('playerMoved', function (playerInfo) {
+  this.socket.on("playerMoved", function (playerInfo) {
     self.otherPlayers.getChildren().forEach(function (otherPlayer) {
       if (playerInfo.playerId === otherPlayer.playerId) {
-        
-        otherPlayer.setPosition(playerInfo.x, playerInfo.y)
+        otherPlayer.setPosition(playerInfo.x, playerInfo.y);
 
         if (playerInfo.direction === "right") {
           otherPlayer.setFlipX(false);
 
-            if (playerInfo.isShooting) {
-              otherPlayer.anims.play("char2_run_shoot", true);
-            } else {
-              otherPlayer.anims.play("char2_run", true);
+          if (playerInfo.isShooting) {
+            otherPlayer.anims.play("char2_run_shoot", true);
+          } else {
+            otherPlayer.anims.play("char2_run", true);
           }
-          
-          // TODO: THIS CAUSES STUTTERING WHEN RUNNING ON THE GROUND BECAUSE BLOCKED.DOWN IS NOT ALWAYS TRUE
-          // if (otherPlayer.body.blocked.down) {
-          //   if (playerInfo.isShooting) {
-          //     otherPlayer.anims.play("char2_run_shoot", true);
-          //   } else {
-          //     otherPlayer.anims.play("char2_run", true);
-          //   }
-          // } else {
-          //   if (playerInfo.isShooting) {
-          //     otherPlayer.anims.play("char2_jump_shoot", true);
-          //   } else {
-          //     otherPlayer.anims.play("char2_jump", true);
-          //   }
-          // }
         }
 
         if (playerInfo.direction === "left") {
           otherPlayer.setFlipX(true);
-          
+
           if (playerInfo.isShooting) {
-              otherPlayer.anims.play("char2_run_shoot", true);
+            otherPlayer.anims.play("char2_run_shoot", true);
           } else {
-              otherPlayer.anims.play("char2_run", true);
+            otherPlayer.anims.play("char2_run", true);
           }
         }
 
@@ -404,19 +490,19 @@ function create() {
           }
         }
       }
-    })
-  })
+    });
+  });
 }
 
 function addPlayer(self, playerInfo) {
-
   //var username = prompt("Please Enter Your Name", "")
 
-  self.player = self.physics.add.sprite(200, 850, 'char1_idle')
+  self.player = self.physics.add
+    .sprite(200, 850, "char1_idle")
     .setDisplaySize(125, 125)
     .setBounce(0.1)
-    .setCollideWorldBounds(true)
-  
+    .setCollideWorldBounds(true);
+
   self.player.playerId = self.socket.id;
   self.player.lives = 3;
   self.player.hitPoints = 4;
@@ -428,88 +514,148 @@ function addPlayer(self, playerInfo) {
 }
 
 function addOtherPlayers(self, playerInfo) {
-  const otherPlayer = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'char2_idle')
-    .setDisplaySize(125, 125)
-    
+  const otherPlayer = self.physics.add
+    .sprite(playerInfo.x, playerInfo.y, "char2_idle")
+    .setDisplaySize(125, 125);
+
   otherPlayer.playerId = playerInfo.playerId;
   otherPlayer.username = playerInfo.username;
   //otherPlayer.setTint(playerInfo.color)
-  self.otherPlayers.add(otherPlayer)
+  self.otherPlayers.add(otherPlayer);
 }
 
 function shoot(self, player) {
-  console.log("PLAYER " + player.playerId + " SHOOT")
-
   var bullet;
 
   if (facingRight) {
-    bullet = self.bullets.create(player.x + 75, player.y - 10, 'bullet')
+    bullet = self.bullets.create(player.x + 75, player.y - 10, "bullet");
     bullet.setVelocityX(1000);
   } else {
-    bullet = self.bullets.create(player.x - 75, player.y - 10, 'bullet')
+    bullet = self.bullets.create(player.x - 75, player.y - 10, "bullet");
     bullet.setVelocityX(-1000);
   }
 
+  bullet.id = generateRandomId();
   bullet.setDisplaySize(20, 10);
-   bullet.playerId = player.playerId;
+  bullet.playerId = player.playerId;
   bullet.body.onWorldBounds = true;
+  bullet.facingRight = facingRight;
+
+  var dataToSend = {
+    x: bullet.x,
+    y: bullet.y,
+    id: bullet.id,
+    playerId: bullet.playerId,
+    facingRight: facingRight,
+  };
+
+  self.socket.emit("bulletCreated", dataToSend);
 }
 
-function playerHit(self, player, bullet) {
+function playerHit(player, bullet) {
+  bullet.destroy();
+
   console.log("PLAYER " + player.playerId + " HIT BY " + bullet.playerId);
 
   player.hitPoints = player.hitPoints - 1;
 
   switch (player.hitPoints) {
-    case 4:
-      // code block
-      break;
     case 3:
-      healthFour.visible(false)
+      healthFour.setVisible(false);
       break;
     case 2:
-      healthFour.visible(false)
-      healthThree.visible(false)
+      healthThree.setVisible(false);
       break;
     case 1:
-      healthFour.visible(false)
-      healthThree.visible(false)
-      healthTwo.visible(false)
+      healthTwo.setVisible(false);
       break;
     case 0:
-      healthFour.visible(false)
-      healthThree.visible(false)
-      healthTwo.visible(false)
-      healthOne.visible(false)
+      healthOne.setVisible(false);
+      die(player);
       break;
-    default:
-      console.log("REMOVE LIFE")
-    //TODO: SUBTRACT LIFE
   }
 }
 
-function otherPlayerHit(self, player, bullet) {
+function subtractLife(player) {
+  switch (lives) {
+    case 3:
+      livesThree.setVisible(false);
+      lives--;
+      player.hitPoints = 4;
+      resetHealthMeter();
+      break;
+    case 2:
+      livesTwo.setVisible(false);
+      lives--;
+      player.hitPoints = 4;
+      resetHealthMeter();
+      break;
+    case 1:
+      livesOne.setVisible(false);
+      lives--;
+      break;
+  }
+}
+
+function die(player) {
+  waitingForRespawn = true;
+  player.anims.play("char1_dead", false);
+  subtractLife(player);
+  respawn();
+}
+
+function respawn() {
+  setTimeout(function () {
+    if (lives > 0) {
+      waitingForRespawn = false;
+      resetHealthMeter();
+    }
+  }, 5000);
+}
+
+function resetHealthMeter() {
+  healthFour.setVisible(true);
+  healthThree.setVisible(true);
+  healthTwo.setVisible(true);
+  healthOne.setVisible(true);
+}
+
+function otherPlayerHit(player, bullet) {
+  bullet.destroy();
   console.log("OTHER PLAYER " + player.playerId + " HIT");
   //TODO: TALLY POINTS IF OTHER PLAYER KILLED?
 }
-   
+
+function generateRandomId() {
+  const randomNumber = Math.floor(Math.random() * 1000000);
+  const timestamp = new Date().getTime();
+  const randomId = `${timestamp}-${randomNumber}`;
+
+  return randomId;
+}
 
 function update() {
-
   //-----------------------------------------------------------------------//
 
   //Remove Spent Bullets
   this.bullets.children.iterate((bullet) => {
     if (bullet != null) {
-       if(bullet.body.blocked.right || bullet.body.blocked.left) {
-        bullet.destroy()
+      if (bullet.body.blocked.right || bullet.body.blocked.left) {
+        bullet.destroy();
       }
-    }  
+    }
   });
-  
-  //Player Movement
-  if (this.player) {
 
+  this.otherPlayerBullets.children.iterate((bullet) => {
+    if (bullet != null) {
+      if (bullet.body.blocked.right || bullet.body.blocked.left) {
+        bullet.destroy();
+      }
+    }
+  });
+
+  //Player Movement
+  if (this.player && !waitingForRespawn) {
     var direction;
 
     //TODO: ONLY PLAY FIRE ANIMATION ONCE DURING SPACE BAR HOLD DOWN. LISTENER EVENT FOR SPACEBAR KEYUP?
@@ -522,26 +668,11 @@ function update() {
       this.player.setFlipX(true);
 
       if (cursors.space.isDown) {
-          this.player.anims.play("char1_run_shoot", true);
-        } else {
-          this.player.anims.play("char1_run", true);
-        }
-
-      //TODO: REMOVE? THESE BLOCKS PREVENTED THE RUNNING ANIMATION IF STILL IN THE AIR BUT ISN'T WORKING WITH OTHER PLAYERS
-      // if (this.player.body.blocked.down) {
-      //   if (cursors.space.isDown) {
-      //     this.player.anims.play("char1_run_shoot", true);
-      //   } else {
-      //     this.player.anims.play("char1_run", true);
-      //   }
-      // } else {
-      //   if (cursors.space.isDown) {
-      //     this.player.anims.play("char1_jump_shoot", true);
-      //   } else {
-      //     this.player.anims.play("char1_jump", true);
-      //   }
-      // }
-    //Move Right
+        this.player.anims.play("char1_run_shoot", true);
+      } else {
+        this.player.anims.play("char1_run", true);
+      }
+      //Move Right
     } else if (cursors.right.isDown) {
       direction = "right";
       facingRight = true;
@@ -549,33 +680,18 @@ function update() {
       this.player.setVelocityX(200);
 
       if (cursors.space.isDown) {
-          this.player.anims.play("char1_run_shoot", true);
-        } else {
-          this.player.anims.play("char1_run", true);
-        }
-
-      //TODO: REMOVE? THESE BLOCKS PREVENTED THE RUNNING ANIMATION IF STILL IN THE AIR BUT ISN'T WORKING WITH OTHER PLAYERS
-      // if (this.player.body.blocked.down) {
-      //   if (cursors.space.isDown) {
-      //     this.player.anims.play("char1_run_shoot", true);
-      //   } else {
-      //     this.player.anims.play("char1_run", true);
-      //   }
-      // } else {
-      //    if (cursors.space.isDown) {
-      //     this.player.anims.play("char1_jump_shoot", true);
-      //   } else {
-      //     this.player.anims.play("char1_jump", true);
-      //   }
-      // }
-    //Idle
+        this.player.anims.play("char1_run_shoot", true);
+      } else {
+        this.player.anims.play("char1_run", true);
+      }
+      //Idle
     } else {
       direction = "idle";
-       if (cursors.space.isDown) {
-          this.player.anims.play("char1_idle_shoot", true);
-        } else {
-          this.player.anims.play("char1_idle", true);
-        }
+      if (cursors.space.isDown) {
+        this.player.anims.play("char1_idle_shoot", true);
+      } else {
+        this.player.anims.play("char1_idle", true);
+      }
       this.player.setVelocityX(0);
     }
 
@@ -584,7 +700,7 @@ function update() {
       direction = "up";
       if (!facingRight) {
         this.player.setFlipX(true);
-      } 
+      }
 
       if (this.player.body.blocked.down) {
         this.player.setVelocityY(-480);
@@ -592,33 +708,33 @@ function update() {
 
       if (cursors.space.isDown) {
         //TODO: THIS ISN'T PLAYING THE FULL ANIMATION
-          this.player.anims.play("char1_jump_shoot", true);
+        this.player.anims.play("char1_jump_shoot", true);
       } else {
-          this.player.anims.play("char1_jump", true);
+        this.player.anims.play("char1_jump", true);
       }
     }
 
     //Get Player Location and Send it to Everyone Else
-      const currPosition = {
-        x: this.player.x,
-        y: this.player.y,
-        direction: direction,
-        facingRight: facingRight,
-        isShooting: cursors.space.isDown,
-    }
+    const currPosition = {
+      x: this.player.x,
+      y: this.player.y,
+      direction: direction,
+      facingRight: facingRight,
+      isShooting: cursors.space.isDown,
+    };
 
-    if (this.player.oldPosition && (
-          currPosition.x !== this.player.oldPosition.x ||
-          currPosition.y !== this.player.oldPosition.y ||
-          currPosition.direction !== this.player.oldPosition.direction ||
-          currPosition.facingRight !== this.player.oldPosition.facingRight ||
-          currPosition.isShooting !== this.player.oldPosition.isShooting)) {
-      
+    if (
+      this.player.oldPosition &&
+      (currPosition.x !== this.player.oldPosition.x ||
+        currPosition.y !== this.player.oldPosition.y ||
+        currPosition.direction !== this.player.oldPosition.direction ||
+        currPosition.facingRight !== this.player.oldPosition.facingRight ||
+        currPosition.isShooting !== this.player.oldPosition.isShooting)
+    ) {
       //Update the Player location via Socket
-      this.socket.emit('playerMovement', currPosition)
+      this.socket.emit("playerMovement", currPosition);
     }
 
-    this.player.oldPosition = currPosition
+    this.player.oldPosition = currPosition;
   }
 }
-
