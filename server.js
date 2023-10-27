@@ -4,20 +4,21 @@ const path = require("path");
 const socketIO = require("socket.io");
 
 const app = express();
+const PORT = process.env.PORT || 5000;
 var server = http.Server(app);
 var io = socketIO(server, {
   pingTimeout: 60000,
 });
 
-app.set("port", 5000);
+//app.set("port", 5000);
 app.use("/static", express.static(__dirname + "/static"));
 
 app.get("/", function (request, response) {
   response.sendFile(path.join(__dirname, "index.html"));
 });
 
-server.listen(5000, function () {
-  console.log("Starting server on port 5000");
+server.listen(PORT, function () {
+  console.log("Starting server on port " + PORT);
 });
 
 var players = {};
