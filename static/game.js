@@ -8,7 +8,7 @@ var config = {
     default: "arcade",
     arcade: {
       debug: true,
-      gravity: { y: 450 },
+      gravity: { y: 400 },
     },
   },
   scene: { preload, create, update },
@@ -264,7 +264,7 @@ function create() {
   this.physics.world.setBounds(39, 25, 1526, 925, true, true, true, true);
   this.physics.add.collider(this.playerCollider, platforms);
   this.physics.add.collider(this.otherPlayers, platforms);
-  this.physics.add.collider(
+  this.physics.add.overlap(
     this.playerCollider,
     this.otherPlayerBullets,
     function (obj1, obj2) {
@@ -273,7 +273,7 @@ function create() {
     null,
     this
   );
-  this.physics.add.collider(
+  this.physics.add.overlap(
     this.otherPlayers,
     this.bullets,
     function (obj1, obj2) {
@@ -552,7 +552,7 @@ function shoot(self, player) {
   self.socket.emit("bulletCreated", dataToSend);
 }
 
-function playerHit(player, bullet) {
+function playerHit(self, player, bullet) {
   bullet.destroy();
 
   console.log("PLAYER " + player.playerId + " HIT BY " + bullet.playerId);
@@ -620,7 +620,7 @@ function resetHealthMeter() {
   healthOne.setVisible(true);
 }
 
-function otherPlayerHit(player, bullet) {
+function otherPlayerHit(self, player, bullet) {
   bullet.destroy();
   console.log("OTHER PLAYER " + player.playerId + " HIT");
   //TODO: TALLY POINTS IF OTHER PLAYER KILLED?
@@ -635,8 +635,6 @@ function generateRandomId() {
 }
 
 function update() {
-  //-----------------------------------------------------------------------//
-
   //Remove Spent Bullets
   this.bullets.children.iterate((bullet) => {
     if (bullet != null) {
@@ -672,7 +670,6 @@ function update() {
       } else {
         this.player.anims.play("char1_run", true);
       }
-      //Move Right
     } else if (cursors.right.isDown) {
       direction = "right";
       facingRight = true;
