@@ -202,6 +202,7 @@ function create() {
   //Game
   const self = this;
   this.socket = io();
+  this.physics.world.fixedStep = false;
 
   this.playerCollider = this.physics.add.group({ collideWorldBounds: true });
   this.otherPlayers = this.physics.add.group({ collideWorldBounds: true });
