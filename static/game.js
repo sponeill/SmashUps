@@ -207,6 +207,7 @@ function create() {
   //Game
   const self = this;
   this.socket = io();
+  this.physics.world.fixedStep = false;
 
   //This was suggested to prevent sprite stuttering
   //this.physics.world.fixedStep = false;
