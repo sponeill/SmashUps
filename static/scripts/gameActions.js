@@ -99,3 +99,7 @@ function resetHealthMeter() {
 function otherPlayerHit(self, player, bullet) {
   bullet.destroy();
 }
+
+function arrowUp(self) {
+  self.player.setVelocityY(-750);
+}

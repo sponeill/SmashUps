@@ -42,14 +42,16 @@ io.on("connection", function (socket) {
   });
 
   socket.on("playerMovement", function (movementData) {
-    players[socket.id].x = movementData.x;
-    players[socket.id].y = movementData.y;
-    players[socket.id].direction = movementData.direction;
-    players[socket.id].facingRight = movementData.facingRight;
-    players[socket.id].isShooting = movementData.isShooting;
-    players[socket.id].waitingForRespawn = movementData.waitingForRespawn;
+    if (movementData) {
+      players[socket.id].x = movementData.x;
+      players[socket.id].y = movementData.y;
+      players[socket.id].direction = movementData.direction;
+      players[socket.id].facingRight = movementData.facingRight;
+      players[socket.id].isShooting = movementData.isShooting;
+      players[socket.id].waitingForRespawn = movementData.waitingForRespawn;
 
-    socket.broadcast.emit("playerMoved", players[socket.id]);
+      socket.broadcast.emit("playerMoved", players[socket.id]);
+    }
   });
 
   socket.on("bulletCreated", function (bulletData) {

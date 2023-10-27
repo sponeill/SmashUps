@@ -52,6 +52,7 @@ function preload() {
   this.load.image("health_4", "/static/assets/images/Health_4.png");
 
   this.load.image("bullet", "/static/assets/images/Bullet.png");
+  this.load.image("arrow", "/static/assets/images/Arrow.png");
 
   //Text Graphics
   this.load.image("title", "/static/assets/text/Title.png");
@@ -199,9 +200,25 @@ function create() {
   platforms.create(1200, 510, "rectangle");
   platforms.create(400, 510, "rectangle");
 
+  var arrow = this.physics.add.image(1450, 650, "arrow");
+  arrow.body.setAllowGravity(false);
+  arrow.setScale(0.75);
+
   //Game
   const self = this;
   this.socket = io();
+
+  //This was suggested to prevent sprite stuttering
+  //this.physics.world.fixedStep = false;
+
+  this.triggerMovementTimer = this.time.addEvent({
+    callback: function () {
+      timerEvent(self, self.player);
+    },
+    callbackScope: this,
+    delay: 50,
+    loop: true,
+  });
 
   this.playerCollider = this.physics.add.group({ collideWorldBounds: true });
   this.otherPlayers = this.physics.add.group({ collideWorldBounds: true });
@@ -217,6 +234,15 @@ function create() {
   this.physics.world.setBounds(39, 25, 1526, 925, true, true, true, true);
   this.physics.add.collider(this.playerCollider, platforms);
   this.physics.add.collider(this.otherPlayers, platforms);
+  this.physics.add.overlap(
+    this.playerCollider,
+    arrow,
+    function () {
+      arrowUp(self);
+    },
+    null,
+    this
+  );
   this.physics.add.overlap(
     this.playerCollider,
     this.otherPlayerBullets,
@@ -396,7 +422,21 @@ function create() {
   this.socket.on("playerMoved", function (playerInfo) {
     self.otherPlayers.getChildren().forEach(function (otherPlayer) {
       if (playerInfo.playerId === otherPlayer.playerId) {
-        otherPlayer.setPosition(playerInfo.x, playerInfo.y);
+        // var interpolationResult = Phaser.Math.Linear(playerInfo.x, playerInfo.y, 0.5);
+        // console.log("INTERPOLATION");
+        // console.log(interpolationResult);
+
+        self.tweens.add({
+          targets: otherPlayer,
+          x: playerInfo.x,
+          y: playerInfo.y,
+          duration: 50,
+          ease: "Linear",
+          yoyo: false,
+          repeat: 0,
+        });
+
+        //otherPlayer.setPosition(playerInfo.x, playerInfo.y);
 
         if (playerInfo.waitingForRespawn) {
           otherPlayer.anims.play("char2_dead", false);
@@ -452,6 +492,12 @@ function create() {
       }
     });
   });
+}
+
+function timerEvent(self, player) {
+  if (player && !waitingForRespawn) {
+    self.socket.emit("playerMovement", player.oldPosition);
+  }
 }
 
 function update() {
@@ -548,12 +594,15 @@ function update() {
       (currPosition.x !== this.player.oldPosition.x ||
         currPosition.y !== this.player.oldPosition.y ||
         currPosition.direction !== this.player.oldPosition.direction ||
+        currPosition.direction !== this.player.oldPosition.direction ||
         currPosition.facingRight !== this.player.oldPosition.facingRight ||
         currPosition.isShooting !== this.player.oldPosition.isShooting ||
         currPosition.waitingForRespawn !== this.player.oldPosition.waitingForRespawn)
     ) {
-      //Update the Player location via Socket
-      this.socket.emit("playerMovement", currPosition);
+      //Update the Player location via Socket 20 Times per Second
+      // if (elapsedTime % 50 == 0) {
+      //   this.socket.emit("playerMovement", currPosition);
+      // }
     }
 
     this.player.oldPosition = currPosition;
