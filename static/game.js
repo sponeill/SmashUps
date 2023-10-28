@@ -217,7 +217,7 @@ function create() {
       timerEvent(self, self.player);
     },
     callbackScope: this,
-    delay: 50,
+    delay: 25,
     loop: true,
   });
 
