@@ -31,6 +31,7 @@ io.on("connection", function (socket) {
     y: 30,
     playerId: socket.id,
     color: getRandomColor(),
+    movements: [],
   };
   socket.emit("currentPlayers", players);
   socket.broadcast.emit("newPlayer", players[socket.id]);

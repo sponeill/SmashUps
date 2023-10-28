@@ -423,70 +423,73 @@ function create() {
   this.socket.on("playerMoved", function (playerInfo) {
     self.otherPlayers.getChildren().forEach(function (otherPlayer) {
       if (playerInfo.playerId === otherPlayer.playerId) {
-        // var interpolationResult = Phaser.Math.Linear(playerInfo.x, playerInfo.y, 0.5);
-        // console.log("INTERPOLATION");
-        // console.log(interpolationResult);
+        //Add movement record to player movement queue
+        otherPlayer.movements.push(playerInfo);
 
-        self.tweens.add({
-          targets: otherPlayer,
-          x: playerInfo.x,
-          y: playerInfo.y,
-          duration: 50,
-          ease: "Linear",
-          yoyo: false,
-          repeat: 0,
-        });
+        if (otherPlayer.movements.length > 4) {
+          let movementInfo = otherPlayer.movements.shift();
 
-        //otherPlayer.setPosition(playerInfo.x, playerInfo.y);
+          self.tweens.add({
+            targets: otherPlayer,
+            x: movementInfo.x,
+            y: movementInfo.y,
+            duration: 50,
+            ease: "Linear",
+            yoyo: false,
+            repeat: 0,
+          });
 
-        if (playerInfo.waitingForRespawn) {
-          otherPlayer.anims.play("char2_dead", false);
-        } else {
-          if (playerInfo.direction === "right") {
-            otherPlayer.setFlipX(false);
+          //otherPlayer.setPosition(playerInfo.x, playerInfo.y);
 
-            if (playerInfo.isShooting) {
-              otherPlayer.anims.play("char2_run_shoot", true);
-            } else {
-              otherPlayer.anims.play("char2_run", true);
-            }
-          }
-
-          if (playerInfo.direction === "left") {
-            otherPlayer.setFlipX(true);
-
-            if (playerInfo.isShooting) {
-              otherPlayer.anims.play("char2_run_shoot", true);
-            } else {
-              otherPlayer.anims.play("char2_run", true);
-            }
-          }
-
-          if (playerInfo.direction === "idle") {
-            if (playerInfo.facingRight !== true) {
-              otherPlayer.setFlipX(true);
-            } else {
+          if (playerInfo.waitingForRespawn) {
+            otherPlayer.anims.play("char2_dead", false);
+          } else {
+            if (playerInfo.direction === "right") {
               otherPlayer.setFlipX(false);
+
+              if (playerInfo.isShooting) {
+                otherPlayer.anims.play("char2_run_shoot", true);
+              } else {
+                otherPlayer.anims.play("char2_run", true);
+              }
             }
 
-            if (playerInfo.isShooting) {
-              otherPlayer.anims.play("char2_idle_shoot", true);
-            } else {
-              otherPlayer.anims.play("char2_idle", true);
-            }
-          }
-
-          if (playerInfo.direction === "up") {
-            if (playerInfo.facingRight !== true) {
+            if (playerInfo.direction === "left") {
               otherPlayer.setFlipX(true);
-            } else {
-              otherPlayer.setFlipX(false);
+
+              if (playerInfo.isShooting) {
+                otherPlayer.anims.play("char2_run_shoot", true);
+              } else {
+                otherPlayer.anims.play("char2_run", true);
+              }
             }
 
-            if (playerInfo.isShooting) {
-              otherPlayer.anims.play("char2_jump_shoot", true);
-            } else {
-              otherPlayer.anims.play("char2_jump", true);
+            if (playerInfo.direction === "idle") {
+              if (playerInfo.facingRight !== true) {
+                otherPlayer.setFlipX(true);
+              } else {
+                otherPlayer.setFlipX(false);
+              }
+
+              if (playerInfo.isShooting) {
+                otherPlayer.anims.play("char2_idle_shoot", true);
+              } else {
+                otherPlayer.anims.play("char2_idle", true);
+              }
+            }
+
+            if (playerInfo.direction === "up") {
+              if (playerInfo.facingRight !== true) {
+                otherPlayer.setFlipX(true);
+              } else {
+                otherPlayer.setFlipX(false);
+              }
+
+              if (playerInfo.isShooting) {
+                otherPlayer.anims.play("char2_jump_shoot", true);
+              } else {
+                otherPlayer.anims.play("char2_jump", true);
+              }
             }
           }
         }
