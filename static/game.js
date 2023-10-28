@@ -426,6 +426,10 @@ function create() {
         //Add movement record to player movement queue
         otherPlayer.movements.push(playerInfo);
 
+        if (playerInfo.waitingForRespawn) {
+          console.log("waitingForRespawn");
+        }
+
         if (otherPlayer.movements.length > 4) {
           let movementInfo = otherPlayer.movements.shift();
 
@@ -433,7 +437,7 @@ function create() {
             targets: otherPlayer,
             x: movementInfo.x,
             y: movementInfo.y,
-            duration: 50,
+            duration: 25,
             ease: "Linear",
             yoyo: false,
             repeat: 0,
@@ -441,51 +445,52 @@ function create() {
 
           //otherPlayer.setPosition(playerInfo.x, playerInfo.y);
 
-          if (playerInfo.waitingForRespawn) {
+          if (movementInfo.waitingForRespawn) {
+            console.log(movementInfo);
             otherPlayer.anims.play("char2_dead", false);
           } else {
-            if (playerInfo.direction === "right") {
+            if (movementInfo.direction === "right") {
               otherPlayer.setFlipX(false);
 
-              if (playerInfo.isShooting) {
+              if (movementInfo.isShooting) {
                 otherPlayer.anims.play("char2_run_shoot", true);
               } else {
                 otherPlayer.anims.play("char2_run", true);
               }
             }
 
-            if (playerInfo.direction === "left") {
+            if (movementInfo.direction === "left") {
               otherPlayer.setFlipX(true);
 
-              if (playerInfo.isShooting) {
+              if (movementInfo.isShooting) {
                 otherPlayer.anims.play("char2_run_shoot", true);
               } else {
                 otherPlayer.anims.play("char2_run", true);
               }
             }
 
-            if (playerInfo.direction === "idle") {
+            if (movementInfo.direction === "idle") {
               if (playerInfo.facingRight !== true) {
                 otherPlayer.setFlipX(true);
               } else {
                 otherPlayer.setFlipX(false);
               }
 
-              if (playerInfo.isShooting) {
+              if (movementInfo.isShooting) {
                 otherPlayer.anims.play("char2_idle_shoot", true);
               } else {
                 otherPlayer.anims.play("char2_idle", true);
               }
             }
 
-            if (playerInfo.direction === "up") {
-              if (playerInfo.facingRight !== true) {
+            if (movementInfo.direction === "up") {
+              if (movementInfo.facingRight !== true) {
                 otherPlayer.setFlipX(true);
               } else {
                 otherPlayer.setFlipX(false);
               }
 
-              if (playerInfo.isShooting) {
+              if (movementInfo.isShooting) {
                 otherPlayer.anims.play("char2_jump_shoot", true);
               } else {
                 otherPlayer.anims.play("char2_jump", true);
