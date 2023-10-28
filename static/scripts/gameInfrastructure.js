@@ -7,6 +7,7 @@ function addPlayer(self, playerInfo) {
   self.player.lives = 3;
   self.player.hitPoints = 4;
   self.player.movements = [];
+  self.player.waitingForRespawn = false;
 
   self.playerCollider.add(self.player);
   //self.player.username = username;
@@ -19,6 +20,7 @@ function addOtherPlayers(self, playerInfo) {
 
   otherPlayer.playerId = playerInfo.playerId;
   otherPlayer.username = playerInfo.username;
+  otherPlayer.waitingForRespawn = playerInfo.waitingForRespawn;
   otherPlayer.movements = [];
   //otherPlayer.setTint(playerInfo.color)
 

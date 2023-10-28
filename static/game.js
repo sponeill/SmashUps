@@ -426,12 +426,15 @@ function create() {
         //Add movement record to player movement queue
         otherPlayer.movements.push(playerInfo);
 
-        if (playerInfo.waitingForRespawn) {
-          console.log("waitingForRespawn");
-        }
-
         if (otherPlayer.movements.length > 4) {
           let movementInfo = otherPlayer.movements.shift();
+
+          if (movementInfo.waitingForRespawn && otherPlayer.waitingForRespawn) {
+            //Don't do anything until the player has respawned
+            return;
+          }
+
+          otherPlayer.waitingForRespawn = movementInfo.waitingForRespawn;
 
           self.tweens.add({
             targets: otherPlayer,
@@ -443,10 +446,7 @@ function create() {
             repeat: 0,
           });
 
-          //otherPlayer.setPosition(playerInfo.x, playerInfo.y);
-
           if (movementInfo.waitingForRespawn) {
-            console.log(movementInfo);
             otherPlayer.anims.play("char2_dead", false);
           } else {
             if (movementInfo.direction === "right") {
@@ -504,7 +504,7 @@ function create() {
 }
 
 function timerEvent(self, player) {
-  if (player && !waitingForRespawn) {
+  if (player) {
     self.socket.emit("playerMovement", player.oldPosition);
   }
 }
