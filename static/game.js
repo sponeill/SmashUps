@@ -30,6 +30,7 @@ var livesOne;
 var livesZero;
 var lives = 3;
 var waitingForRespawn = false;
+var rocket;
 
 function preload() {
   //Images
@@ -133,6 +134,12 @@ function preload() {
     frameWidth: 579,
     frameHeight: 500,
   });
+
+  //Effects
+  this.load.spritesheet("rocket", "/static/assets/sprites/Effects/Rocket.png", {
+    frameWidth: 100,
+    frameHeight: 270,
+  });
 }
 
 function create() {
@@ -204,6 +211,8 @@ function create() {
   arrow.body.setAllowGravity(false);
   arrow.setScale(0.75);
 
+  rocket = this.physics.add.group();
+
   //Game
   const self = this;
   this.socket = io();
@@ -274,6 +283,27 @@ function create() {
   //SPACEBAR SHOOT
   this.input.keyboard.on("keydown-SPACE", function () {
     shoot(self, self.player);
+  });
+
+  //TODO: TRIGGER WITH TOKEN
+  this.input.keyboard.on("keydown-R", function () {
+    //TODO: MOVE TO FUNCTION IN GAMEACTIONS.JS
+    var launchRocket = rocket.create(-100, 800, "rocket");
+    launchRocket.setVelocityY(-1200);
+    launchRocket.setVelocityX(600);
+    launchRocket.setScale(1.75);
+    launchRocket.setRotation(0.6);
+    launchRocket.anims.play("rocket");
+
+    setTimeout(() => {
+      launchRocket.destroy();
+
+      var returnRocket = rocket.create(800, -300, "rocket");
+      returnRocket.setVelocityY(100);
+      returnRocket.setScale(1);
+      returnRocket.setRotation(3);
+      returnRocket.anims.play("rocket");
+    }, "1500");
   });
 
   //Create Animations
@@ -376,6 +406,14 @@ function create() {
     frames: this.anims.generateFrameNumbers("char2_dead"),
     frameRate: 14,
     repeat: 0,
+  });
+
+  //Effects
+  this.anims.create({
+    key: "rocket",
+    frames: this.anims.generateFrameNumbers("rocket"),
+    frameRate: 20,
+    repeat: -1,
   });
 
   //-----------------------------------------------------------------------//
