@@ -217,7 +217,7 @@ function create() {
       timerEvent(self, self.player);
     },
     callbackScope: this,
-    delay: 25,
+    delay: 50,
     loop: true,
   });
 
@@ -438,9 +438,9 @@ function create() {
 
           self.tweens.add({
             targets: otherPlayer,
-            x: movementInfo.x,
-            y: movementInfo.y,
-            duration: 25,
+            x: otherPlayer.x + (movementInfo.x - otherPlayer.x) * 0.75,
+            y: otherPlayer.y + (movementInfo.y - otherPlayer.y) * 0.75,
+            duration: 50,
             ease: "Linear",
             yoyo: false,
             repeat: 0,
