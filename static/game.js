@@ -243,7 +243,7 @@ function create() {
       timerEvent(self, self.player);
     },
     callbackScope: this,
-    delay: 50,
+    delay: 25,
     loop: true,
   });
 
@@ -534,7 +534,7 @@ function create() {
         //Add movement record to player movement queue
         otherPlayer.movements.push(playerInfo);
 
-        if (otherPlayer.movements.length > 4) {
+        if (otherPlayer.movements.length > 8) {
           let movementInfo = otherPlayer.movements.shift();
 
           if (movementInfo.waitingForRespawn && otherPlayer.waitingForRespawn) {
@@ -546,9 +546,9 @@ function create() {
 
           self.tweens.add({
             targets: otherPlayer,
-            x: otherPlayer.x + (movementInfo.x - otherPlayer.x) * 0.75,
-            y: otherPlayer.y + (movementInfo.y - otherPlayer.y) * 0.75,
-            duration: 50,
+            x: otherPlayer.x + (movementInfo.x - otherPlayer.x) * 0.5,
+            y: otherPlayer.y + (movementInfo.y - otherPlayer.y) * 0.5,
+            duration: 25,
             ease: "Linear",
             yoyo: false,
             repeat: 0,

@@ -65,7 +65,7 @@ function carOverlap(player) {
 
   setTimeout(function () {
     carCollider.active = true;
-  }, 5000);
+  }, 2000);
 
   die(player);
 }
