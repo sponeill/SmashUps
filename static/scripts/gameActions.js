@@ -45,12 +45,37 @@ function playerHit(self, player, bullet) {
       break;
     case 0:
       healthOne.setVisible(false);
-      die(player);
+      die(player, null);
       break;
   }
 }
 
+function explosionOverlap(player) {
+  explosionCollider.active = false;
+
+  setTimeout(function () {
+    explosionCollider.active = true;
+  }, 5000);
+
+  die(player);
+}
+
+function carOverlap(player) {
+  carCollider.active = false;
+
+  setTimeout(function () {
+    carCollider.active = true;
+  }, 5000);
+
+  die(player);
+}
+
 function die(player) {
+  healthFour.setVisible(false);
+  healthThree.setVisible(false);
+  healthTwo.setVisible(false);
+  healthOne.setVisible(false);
+
   waitingForRespawn = true;
   player.anims.play("char1_dead", false);
   subtractLife(player);

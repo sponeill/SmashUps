@@ -31,6 +31,10 @@ var livesZero;
 var lives = 3;
 var waitingForRespawn = false;
 var rocket;
+var invisibleBarriers;
+var explosionCollider;
+var cars;
+var carCollider;
 
 function preload() {
   //Images
@@ -140,6 +144,16 @@ function preload() {
     frameWidth: 100,
     frameHeight: 270,
   });
+
+  this.load.spritesheet("car", "/static/assets/sprites/Effects/Car.png", {
+    frameWidth: 858,
+    frameHeight: 442,
+  });
+
+  this.load.spritesheet("explosion", "/static/assets/sprites/Effects/Explosion.png", {
+    frameWidth: 671,
+    frameHeight: 443,
+  });
 }
 
 function create() {
@@ -211,6 +225,9 @@ function create() {
   arrow.body.setAllowGravity(false);
   arrow.setScale(0.75);
 
+  invisibleBarriers = this.physics.add.staticGroup();
+  invisibleBarriers.create(800, 750, "barrier", null, false, true);
+
   rocket = this.physics.add.group();
 
   //Game
@@ -232,6 +249,8 @@ function create() {
 
   this.playerCollider = this.physics.add.group({ collideWorldBounds: true });
   this.otherPlayers = this.physics.add.group({ collideWorldBounds: true });
+  this.explosions = this.physics.add.group({ allowGravity: false });
+  cars = this.physics.add.group({ allowGravity: false });
   this.bullets = this.physics.add.group({
     collideWorldBounds: true,
     allowGravity: false,
@@ -244,6 +263,15 @@ function create() {
   this.physics.world.setBounds(39, 25, 1526, 925, true, true, true, true);
   this.physics.add.collider(this.playerCollider, platforms);
   this.physics.add.collider(this.otherPlayers, platforms);
+  this.physics.add.collider(
+    rocket,
+    invisibleBarriers,
+    function (obj1) {
+      rocketExplosion(this, this.explosions, obj1);
+    },
+    null,
+    this
+  );
   this.physics.add.overlap(
     this.playerCollider,
     arrow,
@@ -267,6 +295,24 @@ function create() {
     this.bullets,
     function (obj1, obj2) {
       otherPlayerHit(self, obj1, obj2);
+    },
+    null,
+    this
+  );
+  explosionCollider = this.physics.add.overlap(
+    this.playerCollider,
+    this.explosions,
+    function () {
+      explosionOverlap(this.player);
+    },
+    null,
+    this
+  );
+  carCollider = this.physics.add.overlap(
+    this.playerCollider,
+    cars,
+    function () {
+      carOverlap(this.player);
     },
     null,
     this
@@ -304,6 +350,16 @@ function create() {
       returnRocket.setRotation(3);
       returnRocket.anims.play("rocket");
     }, "1500");
+  });
+
+  //TODO: TRIGGER WITH TOKEN
+  this.input.keyboard.on("keydown-C", function () {
+    //TODO: MOVE TO FUNCTION IN GAMEACTIONS.JS
+    var car = cars.create(-100, 870, "car");
+    car.setScale(0.4);
+    car.body.setAllowGravity(false);
+    car.setVelocityX(900);
+    car.anims.play("car");
   });
 
   //Create Animations
@@ -414,6 +470,20 @@ function create() {
     frames: this.anims.generateFrameNumbers("rocket"),
     frameRate: 20,
     repeat: -1,
+  });
+
+  this.anims.create({
+    key: "car",
+    frames: this.anims.generateFrameNumbers("car"),
+    frameRate: 60,
+    repeat: -1,
+  });
+
+  this.anims.create({
+    key: "explosion",
+    frames: this.anims.generateFrameNumbers("explosion"),
+    frameRate: 14,
+    repeat: 0,
   });
 
   //-----------------------------------------------------------------------//
@@ -545,6 +615,26 @@ function timerEvent(self, player) {
   if (player) {
     self.socket.emit("playerMovement", player.oldPosition);
   }
+}
+
+function rocketExplosion(self, explosions, rocket) {
+  rocket.destroy();
+  var explosion = explosions.create(875, 450, "explosion");
+  explosion.setScale(1.5);
+  explosion.anims.play("explosion", false);
+
+  self.tweens.add({
+    targets: explosion,
+    alpha: { from: 1, to: 0.0 },
+    ease: "Sine.InOut",
+    duration: 2000,
+    repeat: 0,
+    yoyo: false,
+  });
+
+  setTimeout(() => {
+    explosion.destroy();
+  }, "2000");
 }
 
 function update() {
