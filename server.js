@@ -58,6 +58,18 @@ io.on("connection", function (socket) {
   socket.on("bulletCreated", function (bulletData) {
     socket.broadcast.emit("addBullet", bulletData);
   });
+
+  socket.on("rocketTriggered", function (playerId) {
+    socket.broadcast.emit("rocketLaunch", playerId);
+  });
+
+  socket.on("carTriggered", function (playerId) {
+    socket.broadcast.emit("carStart", playerId);
+  });
+
+  socket.on("arrowsTriggered", function (playerId) {
+    socket.broadcast.emit("fireArrows", playerId);
+  });
 });
 
 function getRandomColor() {

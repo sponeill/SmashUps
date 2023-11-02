@@ -35,6 +35,7 @@ var invisibleBarriers;
 var explosionCollider;
 var cars;
 var carCollider;
+var arrows;
 
 function preload() {
   //Images
@@ -57,6 +58,7 @@ function preload() {
   this.load.image("health_4", "/static/assets/images/Health_4.png");
 
   this.load.image("bullet", "/static/assets/images/Bullet.png");
+  this.load.image("arrow_weapon", "/static/assets/images/Arrow_Weapon.png");
   this.load.image("arrow", "/static/assets/images/Arrow.png");
 
   //Text Graphics
@@ -255,6 +257,7 @@ function create() {
     collideWorldBounds: true,
     allowGravity: false,
   });
+  arrows = this.physics.add.group({ colliderWorldBounds: true, allowGravity: false });
   this.otherPlayerBullets = this.physics.add.group({
     collideWorldBounds: true,
     allowGravity: false,
@@ -291,6 +294,15 @@ function create() {
     this
   );
   this.physics.add.overlap(
+    this.playerCollider,
+    arrows,
+    function (obj1, obj2) {
+      hitByArrow(this.player, obj2);
+    },
+    null,
+    this
+  );
+  this.physics.add.overlap(
     this.otherPlayers,
     this.bullets,
     function (obj1, obj2) {
@@ -302,8 +314,8 @@ function create() {
   explosionCollider = this.physics.add.overlap(
     this.playerCollider,
     this.explosions,
-    function () {
-      explosionOverlap(this.player);
+    function (obj1, obj2) {
+      explosionOverlap(this.player, obj2);
     },
     null,
     this
@@ -311,8 +323,8 @@ function create() {
   carCollider = this.physics.add.overlap(
     this.playerCollider,
     cars,
-    function () {
-      carOverlap(this.player);
+    function (obj1, obj2) {
+      carOverlap(this.player, obj2);
     },
     null,
     this
@@ -333,33 +345,20 @@ function create() {
 
   //TODO: TRIGGER WITH TOKEN
   this.input.keyboard.on("keydown-R", function () {
-    //TODO: MOVE TO FUNCTION IN GAMEACTIONS.JS
-    var launchRocket = rocket.create(-100, 800, "rocket");
-    launchRocket.setVelocityY(-1200);
-    launchRocket.setVelocityX(600);
-    launchRocket.setScale(1.75);
-    launchRocket.setRotation(0.6);
-    launchRocket.anims.play("rocket");
-
-    setTimeout(() => {
-      launchRocket.destroy();
-
-      var returnRocket = rocket.create(800, -300, "rocket");
-      returnRocket.setVelocityY(100);
-      returnRocket.setScale(1);
-      returnRocket.setRotation(3);
-      returnRocket.anims.play("rocket");
-    }, "1500");
+    self.socket.emit("rocketTriggered", self.player.playerId);
+    rocketLaunch(self.player.playerId);
   });
 
   //TODO: TRIGGER WITH TOKEN
   this.input.keyboard.on("keydown-C", function () {
-    //TODO: MOVE TO FUNCTION IN GAMEACTIONS.JS
-    var car = cars.create(-100, 870, "car");
-    car.setScale(0.4);
-    car.body.setAllowGravity(false);
-    car.setVelocityX(900);
-    car.anims.play("car");
+    self.socket.emit("carTriggered", self.player.playerId);
+    driveBy(self.player.playerId);
+  });
+
+  //TODO: TRIGGER WITH TOKEN
+  this.input.keyboard.on("keydown-A", function () {
+    self.socket.emit("arrowsTriggered", self.player.playerId);
+    fireArrows(self.player.playerId);
   });
 
   //Create Animations
@@ -527,6 +526,21 @@ function create() {
     });
   });
 
+  //Launch Rocket initiated by another Player
+  this.socket.on("rocketLaunch", function (playerId) {
+    rocketLaunch(playerId);
+  });
+
+  //Start Car initiated by another Player
+  this.socket.on("carStart", function (playerId) {
+    driveBy(playerId);
+  });
+
+  //Start Car initiated by another Player
+  this.socket.on("fireArrows", function (playerId) {
+    fireArrows(playerId);
+  });
+
   //Handle Other Player Movements
   this.socket.on("playerMoved", function (playerInfo) {
     self.otherPlayers.getChildren().forEach(function (otherPlayer) {
@@ -621,6 +635,7 @@ function rocketExplosion(self, explosions, rocket) {
   rocket.destroy();
   var explosion = explosions.create(875, 450, "explosion");
   explosion.setScale(1.5);
+  explosion.playerId = rocket.playerId;
   explosion.anims.play("explosion", false);
 
   self.tweens.add({
