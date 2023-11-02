@@ -341,6 +341,7 @@ function create() {
   //SPACEBAR SHOOT
   this.input.keyboard.on("keydown-SPACE", function () {
     shoot(self, self.player);
+    self.socket.emit("playerMovement", player.oldPosition);
   });
 
   //TODO: TRIGGER WITH TOKEN
@@ -545,6 +546,8 @@ function create() {
   this.socket.on("playerMoved", function (playerInfo) {
     self.otherPlayers.getChildren().forEach(function (otherPlayer) {
       if (playerInfo.playerId === otherPlayer.playerId) {
+        //TODO: IF IsShooting, move to front of movements stack?
+
         //Add movement record to player movement queue
         otherPlayer.movements.push(playerInfo);
 
