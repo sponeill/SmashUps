@@ -212,6 +212,10 @@ function create() {
   healthFour = this.add.image(200, 150, "health_4");
   healthFour.setScale(0.45);
 
+  //TODO: ADD SPEC DOCUMENTS
+
+  //TODO: ADD INTERNET TROLLS
+
   //Text
   var title = this.add.image(800, 90, "title");
   title.setScale(0.75);
@@ -258,10 +262,6 @@ function create() {
     allowGravity: false,
   });
   arrows = this.physics.add.group({ colliderWorldBounds: true, allowGravity: false });
-  this.otherPlayerBullets = this.physics.add.group({
-    collideWorldBounds: true,
-    allowGravity: false,
-  });
 
   this.physics.world.setBounds(39, 25, 1526, 925, true, true, true, true);
   this.physics.add.collider(this.playerCollider, platforms);
@@ -286,27 +286,9 @@ function create() {
   );
   this.physics.add.overlap(
     this.playerCollider,
-    this.otherPlayerBullets,
-    function (obj1, obj2) {
-      playerHit(self, obj1, obj2);
-    },
-    null,
-    this
-  );
-  this.physics.add.overlap(
-    this.playerCollider,
     arrows,
     function (obj1, obj2) {
       hitByArrow(this.player, obj2);
-    },
-    null,
-    this
-  );
-  this.physics.add.overlap(
-    this.otherPlayers,
-    this.bullets,
-    function (obj1, obj2) {
-      otherPlayerHit(self, obj1, obj2);
     },
     null,
     this
@@ -336,12 +318,6 @@ function create() {
   //LOG PLAYER OBJECT FOR TESTING
   this.input.keyboard.on("keydown-P", function () {
     console.log(self.player);
-  });
-
-  //SPACEBAR SHOOT
-  this.input.keyboard.on("keydown-SPACE", function () {
-    shoot(self, self.player);
-    self.socket.emit("playerMovement", player.oldPosition);
   });
 
   //TODO: TRIGGER WITH TOKEN
@@ -486,6 +462,8 @@ function create() {
     repeat: 0,
   });
 
+  //TODO: PAINT SPLATTER ATTACK?
+
   //-----------------------------------------------------------------------//
 
   //Socket Events
@@ -493,8 +471,10 @@ function create() {
   this.socket.on("currentPlayers", function (players) {
     Object.keys(players).forEach(function (id) {
       if (players[id].playerId === self.socket.id) {
+        console.log("ADD PLAYER");
         addPlayer(self, players[id]);
       } else {
+        console.log("ADD OTHER PLAYER");
         addOtherPlayers(self, players[id]);
       }
     });
@@ -502,21 +482,6 @@ function create() {
 
   this.socket.on("newPlayer", function (playerInfo) {
     addOtherPlayers(self, playerInfo);
-  });
-
-  this.socket.on("addBullet", function (bulletData) {
-    const newBullet = self.otherPlayerBullets.create(bulletData.x, bulletData.y, "bullet");
-
-    newBullet.setDisplaySize(20, 10);
-    newBullet.playerId = bulletData.playerId;
-    newBullet.id = bulletData.Id;
-    newBullet.body.onWorldBounds = true;
-
-    if (bulletData.facingRight) {
-      newBullet.setVelocityX(1000);
-    } else {
-      newBullet.setVelocityX(-1000);
-    }
   });
 
   this.socket.on("playerDisconnected", function (playerId) {
@@ -546,8 +511,6 @@ function create() {
   this.socket.on("playerMoved", function (playerInfo) {
     self.otherPlayers.getChildren().forEach(function (otherPlayer) {
       if (playerInfo.playerId === otherPlayer.playerId) {
-        //TODO: IF IsShooting, move to front of movements stack?
-
         //Add movement record to player movement queue
         otherPlayer.movements.push(playerInfo);
 
@@ -576,22 +539,12 @@ function create() {
           } else {
             if (movementInfo.direction === "right") {
               otherPlayer.setFlipX(false);
-
-              if (movementInfo.isShooting) {
-                otherPlayer.anims.play("char2_run_shoot", true);
-              } else {
-                otherPlayer.anims.play("char2_run", true);
-              }
+              otherPlayer.anims.play("char2_run", true);
             }
 
             if (movementInfo.direction === "left") {
               otherPlayer.setFlipX(true);
-
-              if (movementInfo.isShooting) {
-                otherPlayer.anims.play("char2_run_shoot", true);
-              } else {
-                otherPlayer.anims.play("char2_run", true);
-              }
+              otherPlayer.anims.play("char2_run", true);
             }
 
             if (movementInfo.direction === "idle") {
@@ -600,12 +553,7 @@ function create() {
               } else {
                 otherPlayer.setFlipX(false);
               }
-
-              if (movementInfo.isShooting) {
-                otherPlayer.anims.play("char2_idle_shoot", true);
-              } else {
-                otherPlayer.anims.play("char2_idle", true);
-              }
+              otherPlayer.anims.play("char2_idle", true);
             }
 
             if (movementInfo.direction === "up") {
@@ -614,12 +562,7 @@ function create() {
               } else {
                 otherPlayer.setFlipX(false);
               }
-
-              if (movementInfo.isShooting) {
-                otherPlayer.anims.play("char2_jump_shoot", true);
-              } else {
-                otherPlayer.anims.play("char2_jump", true);
-              }
+              otherPlayer.anims.play("char2_jump", true);
             }
           }
         }
@@ -665,14 +608,6 @@ function update() {
     }
   });
 
-  this.otherPlayerBullets.children.iterate((bullet) => {
-    if (bullet != null) {
-      if (bullet.body.blocked.right || bullet.body.blocked.left) {
-        bullet.destroy();
-      }
-    }
-  });
-
   //Player Movement
   if (this.player) {
     if (!waitingForRespawn) {
@@ -686,31 +621,21 @@ function update() {
         facingRight = false;
         this.player.setVelocityX(-200);
         this.player.setFlipX(true);
-
-        if (cursors.space.isDown) {
-          this.player.anims.play("char1_run_shoot", true);
-        } else {
-          this.player.anims.play("char1_run", true);
-        }
-      } else if (cursors.right.isDown) {
+        this.player.anims.play("char1_run", true);
+      }
+      //Move Right
+      else if (cursors.right.isDown) {
         direction = "right";
         facingRight = true;
         this.player.setFlipX(false);
         this.player.setVelocityX(200);
+        this.player.anims.play("char1_run", true);
 
-        if (cursors.space.isDown) {
-          this.player.anims.play("char1_run_shoot", true);
-        } else {
-          this.player.anims.play("char1_run", true);
-        }
         //Idle
       } else {
         direction = "idle";
-        if (cursors.space.isDown) {
-          this.player.anims.play("char1_idle_shoot", true);
-        } else {
-          this.player.anims.play("char1_idle", true);
-        }
+
+        this.player.anims.play("char1_idle", true);
         this.player.setVelocityX(0);
       }
 
@@ -725,12 +650,7 @@ function update() {
           this.player.setVelocityY(-480);
         }
 
-        if (cursors.space.isDown) {
-          //TODO: THIS ISN'T PLAYING THE FULL ANIMATION
-          this.player.anims.play("char1_jump_shoot", true);
-        } else {
-          this.player.anims.play("char1_jump", true);
-        }
+        this.player.anims.play("char1_jump", true);
       }
     }
 
