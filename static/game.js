@@ -36,6 +36,8 @@ var explosionCollider;
 var cars;
 var carCollider;
 var arrows;
+var documents;
+var starDocuments;
 
 function preload() {
   //Images
@@ -60,6 +62,9 @@ function preload() {
   this.load.image("bullet", "/static/assets/images/Bullet.png");
   this.load.image("arrow_weapon", "/static/assets/images/Arrow_Weapon.png");
   this.load.image("arrow", "/static/assets/images/Arrow.png");
+
+  this.load.image("document", "/static/assets/images/document.png");
+  this.load.image("star_document", "/static/assets/images/star_document.png");
 
   //Text Graphics
   this.load.image("title", "/static/assets/text/Title.png");
@@ -212,7 +217,9 @@ function create() {
   healthFour = this.add.image(200, 150, "health_4");
   healthFour.setScale(0.45);
 
-  //TODO: ADD SPEC DOCUMENTS
+  //ADD SPEC DOCUMENTS
+  documents = this.physics.add.group({ colliderWorldBounds: true, allowGravity: false });
+  starDocuments = this.physics.add.group({ colliderWorldBounds: true, allowGravity: false });
 
   //TODO: ADD INTERNET TROLLS
 
@@ -261,6 +268,7 @@ function create() {
     collideWorldBounds: true,
     allowGravity: false,
   });
+
   arrows = this.physics.add.group({ colliderWorldBounds: true, allowGravity: false });
 
   this.physics.world.setBounds(39, 25, 1526, 925, true, true, true, true);
@@ -275,6 +283,8 @@ function create() {
     null,
     this
   );
+
+  //Player Up Arrow Overlap
   this.physics.add.overlap(
     this.playerCollider,
     arrow,
@@ -284,6 +294,8 @@ function create() {
     null,
     this
   );
+
+  //Player Weapon Arrow Overlap
   this.physics.add.overlap(
     this.playerCollider,
     arrows,
@@ -293,6 +305,19 @@ function create() {
     null,
     this
   );
+
+  //Player Document Overlap
+  this.physics.add.overlap(
+    this.playerCollider,
+    documents,
+    function (obj1, obj2) {
+      documentCollected(self, this.player, obj2);
+    },
+    null,
+    this
+  );
+
+  //Player/Explosion Overlap
   explosionCollider = this.physics.add.overlap(
     this.playerCollider,
     this.explosions,
@@ -302,6 +327,8 @@ function create() {
     null,
     this
   );
+
+  //Player/Car Collider
   carCollider = this.physics.add.overlap(
     this.playerCollider,
     cars,
@@ -336,6 +363,11 @@ function create() {
   this.input.keyboard.on("keydown-A", function () {
     self.socket.emit("arrowsTriggered", self.player.playerId);
     fireArrows(self.player.playerId);
+  });
+
+  //TODO: TRIGGER ON TIMER
+  this.input.keyboard.on("keydown-D", function () {
+    spawnDocument(self);
   });
 
   //Create Animations
@@ -505,6 +537,17 @@ function create() {
   //Start Car initiated by another Player
   this.socket.on("fireArrows", function (playerId) {
     fireArrows(playerId);
+  });
+
+  //Spawn documents created by the game
+  this.socket.on("createDocument", function (documentData) {
+    createDocument(documentData);
+  });
+
+  //Destroy documents once collected
+  this.socket.on("destroyDocument", function (id) {
+    console.log("destroyDocument heard");
+    destroyDocument(id, this.documents);
   });
 
   //Handle Other Player Movements

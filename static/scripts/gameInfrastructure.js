@@ -9,6 +9,7 @@ function addPlayer(self, playerInfo) {
   self.player.movements = [];
   self.player.waitingForRespawn = false;
   self.player.setScale(0.2);
+  self.player.documentCount = 0;
 
   self.playerCollider.add(self.player);
   //self.player.username = username;
@@ -25,6 +26,7 @@ function addOtherPlayers(self, playerInfo) {
   otherPlayer.movements = [];
   otherPlayer.setScale(0.2);
   otherPlayer.setTint(playerInfo.color);
+  otherPlayer.documentCount = playerInfo.documentCount;
 
   self.otherPlayers.add(otherPlayer);
 }

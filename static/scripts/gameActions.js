@@ -1,31 +1,3 @@
-function shoot(self, player) {
-  var bullet;
-
-  if (facingRight) {
-    bullet = self.bullets.create(player.x + 75, player.y - 10, "bullet");
-    bullet.setVelocityX(1000);
-  } else {
-    bullet = self.bullets.create(player.x - 75, player.y - 10, "bullet");
-    bullet.setVelocityX(-1000);
-  }
-
-  bullet.id = generateRandomId();
-  bullet.setDisplaySize(20, 10);
-  bullet.playerId = player.playerId;
-  bullet.body.onWorldBounds = true;
-  bullet.facingRight = facingRight;
-
-  var dataToSend = {
-    x: bullet.x,
-    y: bullet.y,
-    id: bullet.id,
-    playerId: bullet.playerId,
-    facingRight: facingRight,
-  };
-
-  self.socket.emit("bulletCreated", dataToSend);
-}
-
 function hitByArrow(player, arrow) {
   if (arrow.playerId != player.playerId) {
     arrow.destroy();
@@ -33,10 +5,14 @@ function hitByArrow(player, arrow) {
   }
 }
 
+function documentCollected(self, player, document) {
+  self.socket.emit("documentCollected", document.id);
+  document.destroy();
+  player.documentCount++;
+}
+
 function playerHit(self, player, bullet) {
   bullet.destroy();
-
-  console.log("PLAYER " + player.playerId + " HIT BY PLAYER " + bullet.playerId + " AND BULLET " + bullet.id);
 
   player.hitPoints = player.hitPoints - 1;
 
@@ -195,4 +171,39 @@ function fireArrows(playerId) {
       }, index * 500);
     })(i);
   }
+}
+
+function createDocument(documentData) {
+  var newDocument = documents.create(documentData.x, documentData.y, "document");
+  newDocument.setScale(0.1);
+  newDocument.isPowerUp = documentData.isPowerUp;
+  newDocument.id = documentData.id;
+  console.log(newDocument);
+}
+
+function destroyDocument(id, documents) {
+  var document = documents.find((item) => item.id === id);
+  if (document != null) {
+    document.destroy();
+  }
+}
+
+function spawnDocument(self) {
+  //TODO: RANDOMIZE
+  // var isPowerUp = false
+
+  var newDocument = documents.create(0, 0, "document");
+  newDocument.setRandomPosition(50, 50, 1550, 950);
+  newDocument.setScale(0.1);
+  newDocument.isPowerUp = false;
+
+  var dataToSend = {
+    x: newDocument.x,
+    y: newDocument.y,
+    id: generateRandomId(),
+    isPowerUp: newDocument.isPowerUp,
+  };
+
+  //THIS WILL SPAWN DOCUMENTS ACROSS THE PLAYER BOARDS
+  self.socket.emit("documentCreated", dataToSend);
 }

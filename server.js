@@ -55,10 +55,6 @@ io.on("connection", function (socket) {
     }
   });
 
-  socket.on("bulletCreated", function (bulletData) {
-    socket.broadcast.emit("addBullet", bulletData);
-  });
-
   socket.on("rocketTriggered", function (playerId) {
     socket.broadcast.emit("rocketLaunch", playerId);
   });
@@ -69,6 +65,16 @@ io.on("connection", function (socket) {
 
   socket.on("arrowsTriggered", function (playerId) {
     socket.broadcast.emit("fireArrows", playerId);
+  });
+
+  socket.on("documentCreated", function (documentData) {
+    socket.broadcast.emit("createDocument", documentData);
+  });
+
+  //TODO: THIS ISN'T GETTING HEARD
+  socket.on("documentCollected", function (id) {
+    console.log("documentCollected Heard");
+    socket.broadcast.emit("destroyDocument", id);
   });
 });
 
