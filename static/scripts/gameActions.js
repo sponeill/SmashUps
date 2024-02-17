@@ -113,7 +113,7 @@ function arrowUp(self) {
 function createDocument(documentData) {
   var newDocument;
 
-  if (documentData.isPowerUp) {
+  if (documentData.isPowerUp == true) {
     newDocument = documents.create(documentData.x, documentData.y, "star_document");
   } else {
     newDocument = documents.create(documentData.x, documentData.y, "document");
@@ -121,6 +121,7 @@ function createDocument(documentData) {
 
   newDocument.setScale(0.1);
   newDocument.isPowerUp = documentData.isPowerUp;
+  newDocument.powerUp = document.powerUp;
   newDocument.id = documentData.id;
 }
 
@@ -128,8 +129,11 @@ function documentCollected(self, player, document) {
   self.socket.emit("documentCollected", document.id);
   document.destroy();
   player.documentCount++;
+  console.log("isPowerUp:" + document.isPowerUp);
 
   if (document.isPowerUp) {
+    console.log("isPowerUp:" + document.isPowerUp);
+    console.log(document.powerUp);
     if (document.powerUp == "rocket") {
       rocketLaunch(player.playerId);
       self.socket.emit("rocketTriggered", player.playerId);
@@ -159,7 +163,7 @@ function spawnDocument(self) {
   const randomValue = Math.random();
 
   // There is a 33% chance that the document will be a powerup
-  if (randomValue < 0.4) {
+  if (randomValue < 0.33) {
     isPowerUp = true;
 
     var powerUpValue = Math.random();
@@ -181,7 +185,7 @@ function spawnDocument(self) {
     newDocument = documents.create(0, 0, "document");
   }
 
-  newDocument.setRandomPosition(50, 50, 1550, 950);
+  newDocument.setRandomPosition(100, 100, 1300, 800);
   newDocument.setScale(0.1);
   newDocument.isPowerUp = isPowerUp;
   newDocument.powerUp = powerUp;

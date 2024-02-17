@@ -260,6 +260,16 @@ function create() {
     loop: true,
   });
 
+  //TODO: ENABLE TIMER FOR DOCS
+  // this.documentSpawnTimer = this.time.addEvent({
+  //   callback: function () {
+  //     spawnDocument(self);
+  //   },
+  //   callbackScope: this,
+  //   delay: 10000,
+  //   loop: true,
+  // });
+
   this.playerCollider = this.physics.add.group({ collideWorldBounds: true });
   this.otherPlayers = this.physics.add.group({ collideWorldBounds: true });
   this.explosions = this.physics.add.group({ allowGravity: false });
