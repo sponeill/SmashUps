@@ -557,20 +557,31 @@ function create() {
         otherPlayer.movements.push(playerInfo);
 
         if (otherPlayer.movements.length > 8) {
-          let movementInfo = otherPlayer.movements.shift();
+          otherPlayer.movements.splice(0, otherPlayer.movements.length - 8);
+
+          // Latest Movement Info
+          let movementInfo = otherPlayer.movements[otherPlayer.movements.length - 1];
 
           if (movementInfo.waitingForRespawn && otherPlayer.waitingForRespawn) {
             //Don't do anything until the player has respawned
             return;
           }
 
+          // Interpolate between current position and target position
+          let newX = otherPlayer.x + (movementInfo.x - otherPlayer.x) * 0.5;
+          let newY = otherPlayer.y + (movementInfo.y - otherPlayer.y) * 0.5;
+
+          // Calculate duration dynamically based on the frame rate
+          let frameRate = self.game.loop.actualFps || 60; // Use actualFps if available
+          let duration = Math.max(25, 1000 / frameRate); // Ensure a minimum duration
+
           otherPlayer.waitingForRespawn = movementInfo.waitingForRespawn;
 
           self.tweens.add({
             targets: otherPlayer,
-            x: otherPlayer.x + (movementInfo.x - otherPlayer.x) * 0.5,
-            y: otherPlayer.y + (movementInfo.y - otherPlayer.y) * 0.5,
-            duration: 25,
+            x: newX,
+            y: newY,
+            duration: duration,
             ease: "Linear",
             yoyo: false,
             repeat: 0,
@@ -654,8 +665,6 @@ function update() {
   if (this.player) {
     if (!waitingForRespawn) {
       var direction;
-
-      //TODO: ONLY PLAY FIRE ANIMATION ONCE DURING SPACE BAR HOLD DOWN. LISTENER EVENT FOR SPACEBAR KEYUP?
 
       //Move Left
       if (cursors.left.isDown) {
