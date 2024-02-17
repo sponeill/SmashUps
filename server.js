@@ -71,9 +71,7 @@ io.on("connection", function (socket) {
     socket.broadcast.emit("createDocument", documentData);
   });
 
-  //TODO: THIS ISN'T GETTING HEARD
   socket.on("documentCollected", function (id) {
-    console.log("documentCollected Heard");
     socket.broadcast.emit("destroyDocument", id);
   });
 });

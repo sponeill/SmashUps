@@ -546,8 +546,7 @@ function create() {
 
   //Destroy documents once collected
   this.socket.on("destroyDocument", function (id) {
-    console.log("destroyDocument heard");
-    destroyDocument(id, this.documents);
+    destroyDocument(id, documents);
   });
 
   //Handle Other Player Movements

@@ -5,12 +5,6 @@ function hitByArrow(player, arrow) {
   }
 }
 
-function documentCollected(self, player, document) {
-  self.socket.emit("documentCollected", document.id);
-  document.destroy();
-  player.documentCount++;
-}
-
 function playerHit(self, player, bullet) {
   bullet.destroy();
 
@@ -178,29 +172,43 @@ function createDocument(documentData) {
   newDocument.setScale(0.1);
   newDocument.isPowerUp = documentData.isPowerUp;
   newDocument.id = documentData.id;
-  console.log(newDocument);
+}
+
+function documentCollected(self, player, document) {
+  self.socket.emit("documentCollected", document.id);
+  document.destroy();
+  player.documentCount++;
 }
 
 function destroyDocument(id, documents) {
-  var document = documents.find((item) => item.id === id);
+  console.log(documents.children.entries);
+  console.log(id);
+  var document = documents.children.entries.find((entry) => entry.id === id);
   if (document != null) {
     document.destroy();
   }
 }
 
 function spawnDocument(self) {
-  //TODO: RANDOMIZE
-  // var isPowerUp = false
+  let isPowerUp = false;
+
+  const randomValue = Math.random();
+
+  // There is a 33% chance that the document will be a powerup
+  if (randomValue < 0.33) {
+    isPowerUp = true;
+  }
 
   var newDocument = documents.create(0, 0, "document");
   newDocument.setRandomPosition(50, 50, 1550, 950);
   newDocument.setScale(0.1);
-  newDocument.isPowerUp = false;
+  newDocument.isPowerUp = isPowerUp;
+  newDocument.id = generateRandomId();
 
   var dataToSend = {
     x: newDocument.x,
     y: newDocument.y,
-    id: generateRandomId(),
+    id: newDocument.id,
     isPowerUp: newDocument.isPowerUp,
   };
 
