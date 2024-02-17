@@ -130,9 +130,16 @@ function documentCollected(self, player, document) {
   player.documentCount++;
 
   if (document.isPowerUp) {
-    //TODO: CHOOSE BETWEEN POWERUP OPTIONS
-    rocketLaunch(player.playerId);
-    self.socket.emit("rocketTriggered", player.playerId);
+    if (document.powerUp == "rocket") {
+      rocketLaunch(player.playerId);
+      self.socket.emit("rocketTriggered", player.playerId);
+    } else if (document.powerUp == "car") {
+      driveBy(player.playerId);
+      self.socket.emit("carTriggered", player.playerId);
+    } else if (document.powerUp == "arrows") {
+      fireArrows(player.playerId);
+      self.socket.emit("arrowsTriggered", player.playerId);
+    }
   }
 }
 
@@ -147,12 +154,23 @@ function destroyDocument(id, documents) {
 
 function spawnDocument(self) {
   let isPowerUp = false;
+  let powerUp = "";
 
   const randomValue = Math.random();
 
   // There is a 33% chance that the document will be a powerup
-  if (randomValue < 0.33) {
+  if (randomValue < 0.4) {
     isPowerUp = true;
+
+    var powerUpValue = Math.random();
+
+    if (powerUpValue <= 0.33) {
+      powerUp = "rocket";
+    } else if (powerUpValue > 0.33 && powerUpValue <= 0.66) {
+      powerUp = "car";
+    } else {
+      powerUp = "arrows";
+    }
   }
 
   var newDocument;
@@ -166,6 +184,7 @@ function spawnDocument(self) {
   newDocument.setRandomPosition(50, 50, 1550, 950);
   newDocument.setScale(0.1);
   newDocument.isPowerUp = isPowerUp;
+  newDocument.powerUp = powerUp;
   newDocument.id = generateRandomId();
 
   var dataToSend = {
@@ -173,6 +192,7 @@ function spawnDocument(self) {
     y: newDocument.y,
     id: newDocument.id,
     isPowerUp: newDocument.isPowerUp,
+    powerUp: newDocument.powerUp,
   };
 
   //THIS WILL SPAWN DOCUMENTS ACROSS THE PLAYER BOARDS
