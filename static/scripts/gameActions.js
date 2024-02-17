@@ -110,6 +110,75 @@ function arrowUp(self) {
   self.player.setVelocityY(-750);
 }
 
+function createDocument(documentData) {
+  var newDocument;
+
+  if (documentData.isPowerUp) {
+    newDocument = documents.create(documentData.x, documentData.y, "star_document");
+  } else {
+    newDocument = documents.create(documentData.x, documentData.y, "document");
+  }
+
+  newDocument.setScale(0.1);
+  newDocument.isPowerUp = documentData.isPowerUp;
+  newDocument.id = documentData.id;
+}
+
+function documentCollected(self, player, document) {
+  self.socket.emit("documentCollected", document.id);
+  document.destroy();
+  player.documentCount++;
+
+  if (document.isPowerUp) {
+    //TODO: CHOOSE BETWEEN POWERUP OPTIONS
+    rocketLaunch(player.playerId);
+    self.socket.emit("rocketTriggered", player.playerId);
+  }
+}
+
+function destroyDocument(id, documents) {
+  console.log(documents.children.entries);
+  console.log(id);
+  var document = documents.children.entries.find((entry) => entry.id === id);
+  if (document != null) {
+    document.destroy();
+  }
+}
+
+function spawnDocument(self) {
+  let isPowerUp = false;
+
+  const randomValue = Math.random();
+
+  // There is a 33% chance that the document will be a powerup
+  if (randomValue < 0.33) {
+    isPowerUp = true;
+  }
+
+  var newDocument;
+
+  if (isPowerUp) {
+    newDocument = documents.create(0, 0, "star_document");
+  } else {
+    newDocument = documents.create(0, 0, "document");
+  }
+
+  newDocument.setRandomPosition(50, 50, 1550, 950);
+  newDocument.setScale(0.1);
+  newDocument.isPowerUp = isPowerUp;
+  newDocument.id = generateRandomId();
+
+  var dataToSend = {
+    x: newDocument.x,
+    y: newDocument.y,
+    id: newDocument.id,
+    isPowerUp: newDocument.isPowerUp,
+  };
+
+  //THIS WILL SPAWN DOCUMENTS ACROSS THE PLAYER BOARDS
+  self.socket.emit("documentCreated", dataToSend);
+}
+
 function rocketLaunch(playerId) {
   var launchRocket = rocket.create(-100, 800, "rocket");
   launchRocket.setVelocityY(-1200);
@@ -165,53 +234,4 @@ function fireArrows(playerId) {
       }, index * 500);
     })(i);
   }
-}
-
-function createDocument(documentData) {
-  var newDocument = documents.create(documentData.x, documentData.y, "document");
-  newDocument.setScale(0.1);
-  newDocument.isPowerUp = documentData.isPowerUp;
-  newDocument.id = documentData.id;
-}
-
-function documentCollected(self, player, document) {
-  self.socket.emit("documentCollected", document.id);
-  document.destroy();
-  player.documentCount++;
-}
-
-function destroyDocument(id, documents) {
-  console.log(documents.children.entries);
-  console.log(id);
-  var document = documents.children.entries.find((entry) => entry.id === id);
-  if (document != null) {
-    document.destroy();
-  }
-}
-
-function spawnDocument(self) {
-  let isPowerUp = false;
-
-  const randomValue = Math.random();
-
-  // There is a 33% chance that the document will be a powerup
-  if (randomValue < 0.33) {
-    isPowerUp = true;
-  }
-
-  var newDocument = documents.create(0, 0, "document");
-  newDocument.setRandomPosition(50, 50, 1550, 950);
-  newDocument.setScale(0.1);
-  newDocument.isPowerUp = isPowerUp;
-  newDocument.id = generateRandomId();
-
-  var dataToSend = {
-    x: newDocument.x,
-    y: newDocument.y,
-    id: newDocument.id,
-    isPowerUp: newDocument.isPowerUp,
-  };
-
-  //THIS WILL SPAWN DOCUMENTS ACROSS THE PLAYER BOARDS
-  self.socket.emit("documentCreated", dataToSend);
 }
