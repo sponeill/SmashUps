@@ -156,7 +156,11 @@ function destroyDocument(id, documents) {
   }
 }
 
-function spawnDocument(self) {
+function spawnDocument(self, documents) {
+  if (documents.children.entries.length > 3) {
+    return;
+  }
+
   let isPowerUp = false;
   let powerUp = "";
 

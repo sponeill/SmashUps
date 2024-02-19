@@ -377,7 +377,7 @@ function create() {
 
   //TODO: TRIGGER ON TIMER
   this.input.keyboard.on("keydown-D", function () {
-    spawnDocument(self);
+    spawnDocument(self, documents);
   });
 
   //Create Animations
