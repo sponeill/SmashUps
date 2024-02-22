@@ -74,6 +74,10 @@ io.on("connection", function (socket) {
   socket.on("documentCollected", function (id) {
     socket.broadcast.emit("destroyDocument", id);
   });
+
+  socket.on("startGame", function (id) {
+    socket.broadcast.emit("gameStarted", id);
+  });
 });
 
 function getRandomColor() {

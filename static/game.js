@@ -38,8 +38,16 @@ var carCollider;
 var arrows;
 var documents;
 var starDocuments;
+var timerText;
+var docLabel;
+var docCountLabel;
+var docCount;
+var timerCount;
+var gameStarted = false;
 
 function preload() {
+  this.load.script("webfont", "https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js");
+
   //Images
   this.load.image("dry_erase_board", "/static/assets/images/DryEraseBoard.png");
 
@@ -164,6 +172,9 @@ function preload() {
 }
 
 function create() {
+  timerCount = 60;
+  docCount = 0;
+
   //Images
   this.add.image(800, 500, "dry_erase_board");
 
@@ -177,25 +188,30 @@ function create() {
   stickyNote2.setRotation(0.2);
   stickyNote2.setDepth(1000);
 
-  livesZero = this.add.image(1535, 70, "lives_0");
-  livesZero.setDisplaySize(105, 105);
-  livesZero.setRotation(0);
-  livesZero.setDepth(1000);
+  var stickyNote3 = this.add.image(1535, 70, "sticky_note_3");
+  stickyNote3.setDisplaySize(105, 105);
+  stickyNote3.setRotation(-0.1);
+  stickyNote3.setDepth(999);
 
-  livesOne = this.add.image(1535, 70, "lives_1");
-  livesOne.setDisplaySize(105, 105);
-  livesOne.setRotation(0);
-  livesOne.setDepth(1000);
+  // livesZero = this.add.image(1535, 70, "lives_0");
+  // livesZero.setDisplaySize(105, 105);
+  // livesZero.setRotation(0);
+  // livesZero.setDepth(1000);
 
-  livesTwo = this.add.image(1535, 70, "lives_2");
-  livesTwo.setDisplaySize(105, 105);
-  livesTwo.setRotation(0);
-  livesTwo.setDepth(1000);
+  // livesOne = this.add.image(1535, 70, "lives_1");
+  // livesOne.setDisplaySize(105, 105);
+  // livesOne.setRotation(0);
+  // livesOne.setDepth(1000);
 
-  livesThree = this.add.image(1535, 70, "lives_3");
-  livesThree.setDisplaySize(105, 105);
-  livesThree.setRotation(0);
-  livesThree.setDepth(1000);
+  // livesTwo = this.add.image(1535, 70, "lives_2");
+  // livesTwo.setDisplaySize(105, 105);
+  // livesTwo.setRotation(0);
+  // livesTwo.setDepth(1000);
+
+  // livesThree = this.add.image(1535, 70, "lives_3");
+  // livesThree.setDisplaySize(105, 105);
+  // livesThree.setRotation(0);
+  // livesThree.setDepth(1000);
 
   var stickyNote4 = this.add.image(1400, 60, "sticky_note_4");
   stickyNote4.setDisplaySize(105, 105);
@@ -248,9 +264,28 @@ function create() {
   this.socket = io();
   this.physics.world.fixedStep = false;
 
+  //Load Text
+  WebFont.load({
+    google: {
+      families: ["Permanent Marker"],
+    },
+    active: function () {
+      timerText = self.add.text(1250, 50, timerCount, { fontFamily: "Permanent Marker", fontSize: 40, color: "red" });
+
+      docLabel = self.add.text(1500, 35, "Docs", { fontFamily: "Permanent Marker", fontSize: 25, color: "black" });
+      docLabel.setDepth(9999);
+      docLabel.setRotation(-0.1);
+
+      docCountLabel = self.add.text(1515, 65, "0", { fontFamily: "Permanent Marker", fontSize: 40, color: "black" });
+      docCountLabel.setDepth(9999);
+      docCountLabel.setRotation(-0.1);
+    },
+  });
+
   //This was suggested to prevent sprite stuttering
   //this.physics.world.fixedStep = false;
 
+  //Character movement timer
   this.triggerMovementTimer = this.time.addEvent({
     callback: function () {
       timerEvent(self, self.player);
@@ -260,15 +295,25 @@ function create() {
     loop: true,
   });
 
-  //TODO: ENABLE TIMER FOR DOCS
-  // this.documentSpawnTimer = this.time.addEvent({
-  //   callback: function () {
-  //     spawnDocument(self);
-  //   },
-  //   callbackScope: this,
-  //   delay: 10000,
-  //   loop: true,
-  // });
+  //Document Timer
+  this.documentSpawnTimer = this.time.addEvent({
+    callback: function () {
+      spawnDocument(self, documents);
+    },
+    callbackScope: this,
+    delay: 2000,
+    loop: true,
+  });
+
+  //Game Timer
+  this.gameTimer = this.time.addEvent({
+    callback: function () {
+      countDown(timerText);
+    },
+    callbackScope: this,
+    delay: 1000,
+    loop: true,
+  });
 
   this.playerCollider = this.physics.add.group({ collideWorldBounds: true });
   this.otherPlayers = this.physics.add.group({ collideWorldBounds: true });
@@ -321,7 +366,7 @@ function create() {
     this.playerCollider,
     documents,
     function (obj1, obj2) {
-      documentCollected(self, this.player, obj2);
+      documentCollected(self, this.player, obj2, docCountLabel);
     },
     null,
     this
@@ -375,9 +420,10 @@ function create() {
     fireArrows(self.player.playerId);
   });
 
-  //TODO: TRIGGER ON TIMER
-  this.input.keyboard.on("keydown-D", function () {
-    spawnDocument(self, documents);
+  this.input.keyboard.on("keydown-S", function () {
+    console.log("START GAME");
+    self.socket.emit("startGame");
+    gameStarted = true;
   });
 
   //Create Animations
@@ -559,6 +605,11 @@ function create() {
     destroyDocument(id, documents);
   });
 
+  //Launch Rocket initiated by another Player
+  this.socket.on("gameStarted", function () {
+    gameStarted = true;
+  });
+
   //Handle Other Player Movements
   this.socket.on("playerMoved", function (playerInfo) {
     self.otherPlayers.getChildren().forEach(function (otherPlayer) {
@@ -662,6 +713,13 @@ function rocketExplosion(self, explosions, rocket) {
 }
 
 function update() {
+  //End the game when time runs out
+  if (timerCount <= 0) {
+    gameStarted = false;
+    //Clear the board
+    documents.children.entries.forEach((doc) => doc.destroy());
+  }
+
   //Remove Spent Bullets
   this.bullets.children.iterate((bullet) => {
     if (bullet != null) {

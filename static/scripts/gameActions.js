@@ -110,6 +110,13 @@ function arrowUp(self) {
   self.player.setVelocityY(-750);
 }
 
+function countDown(timerText) {
+  if (self.gameStarted) {
+    self.timerCount = self.timerCount - 1;
+    timerText.setText(self.timerCount);
+  }
+}
+
 function createDocument(documentData) {
   var newDocument;
 
@@ -125,10 +132,13 @@ function createDocument(documentData) {
   newDocument.id = documentData.id;
 }
 
-function documentCollected(self, player, document) {
+function documentCollected(self, player, document, docCountLabel) {
   self.socket.emit("documentCollected", document.id);
   document.destroy();
+
   player.documentCount++;
+
+  docCountLabel.setText(player.documentCount);
   console.log("isPowerUp:" + document.isPowerUp);
 
   if (document.isPowerUp) {
@@ -148,8 +158,6 @@ function documentCollected(self, player, document) {
 }
 
 function destroyDocument(id, documents) {
-  console.log(documents.children.entries);
-  console.log(id);
   var document = documents.children.entries.find((entry) => entry.id === id);
   if (document != null) {
     document.destroy();
@@ -157,7 +165,7 @@ function destroyDocument(id, documents) {
 }
 
 function spawnDocument(self, documents) {
-  if (documents.children.entries.length > 3) {
+  if (documents.children.entries.length > 3 || gameStarted == false) {
     return;
   }
 
